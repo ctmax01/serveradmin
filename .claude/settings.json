@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /home/ct/Desktop/admin/front-admin -name tailwind.config.* -o -name .eslintrc.* -o -name tsconfig.json)",
+      "Bash(grep -r \"from ''antd''\" /home/ct/Desktop/admin/front-admin/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -r \"from ''@ant-design\" /home/ct/Desktop/admin/front-admin/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(node_modules/.bin/tsc -b --noEmit)",
+      "Bash(npm uninstall:*)",
+      "Bash(node_modules/.bin/vite build:*)",
+      "Bash(npx shadcn@latest add button input textarea label dialog alert-dialog select switch checkbox badge alert separator sonner --yes)",
+      "Bash(npx shadcn@latest add sidebar --yes)",
+      "Bash(ls /usr/local/bin/node*)",
+      "Bash(ls ~/.nvm/versions/node/*/bin/node)",
+      "Bash(/home/ct/.nvm/versions/node/v24.14.0/bin/npx tsc:*)",
+      "Bash(/home/ct/.nvm/versions/node/v24.14.0/bin/node ./node_modules/.bin/tsc -b --noEmit)"
+    ],
+    "additionalDirectories": [
+      "/home/ct/Desktop/admin/front-admin/src/components/ui"
+    ]
+  }
+}
