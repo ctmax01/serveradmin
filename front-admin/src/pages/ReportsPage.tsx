@@ -24,6 +24,7 @@ import {
 import { useConfirm } from '@/hooks/useConfirm'
 import type { Report } from '../types'
 import { reportApi } from '../services/api'
+import { DataTable } from '@/components/DataTable'
 
 const col = createColumnHelper<Report>()
 
@@ -47,7 +48,12 @@ const ReportsPage = () => {
 
   const form = useForm<FormValues>()
 
-  const { data: items = [], isLoading, isError, error } = useQuery({
+  const {
+    data: items = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['reports', search],
     queryFn: () => reportApi.getAll(search || undefined),
     select: (d) => (Array.isArray(d) ? d : []),
@@ -130,8 +136,17 @@ const ReportsPage = () => {
       size: 140,
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Button variant="link" size="sm" onClick={() => handleEdit(row.original)}>Изменить</Button>
-          <Button variant="link" className="text-destructive hover:text-destructive/80 p-0 h-auto" size="sm" onClick={() => handleDelete(row.original.id)}>Удалить</Button>
+          <Button variant="link" size="sm" onClick={() => handleEdit(row.original)}>
+            Изменить
+          </Button>
+          <Button
+            variant="link"
+            className="text-destructive hover:text-destructive/80 p-0 h-auto"
+            size="sm"
+            onClick={() => handleDelete(row.original.id)}
+          >
+            Удалить
+          </Button>
         </div>
       ),
     }),
@@ -158,42 +173,13 @@ const ReportsPage = () => {
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
         />
-        <Button variant="outline" onClick={() => setSearch(searchInput)}>Найти</Button>
-        <Button onClick={handleAdd}>Добавить</Button>
+        <Button variant="outline" onClick={() => setSearch(searchInput)}>
+          Найти
+        </Button>
+        <Button onClick={handleAdd}>+</Button>
       </div>
 
-      <div className="tableWrapper">
-        {isLoading ? (
-          <div className="flex justify-center p-8">
-            <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <table className="ts-table">
-            <thead>
-              {table.getHeaderGroups().map((hg) => (
-                <tr key={hg.id}>
-                  {hg.headers.map((h) => (
-                    <th key={h.id} style={{ width: h.getSize() }}>
-                      {flexRender(h.column.columnDef.header, h.getContext())}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <DataTable table={table} isLoading={isLoading} />
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
@@ -235,7 +221,9 @@ const ReportsPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>Отмена</Button>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
+              Отмена
+            </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? 'Сохранение…' : 'Сохранить'}
             </Button>

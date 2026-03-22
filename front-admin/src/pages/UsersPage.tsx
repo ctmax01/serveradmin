@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
   createColumnHelper,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from '@tanstack/react-table'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -18,20 +19,33 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+
 import { useConfirm } from '@/hooks/useConfirm'
+import { DataTable } from '@/components/DataTable'
 import UserForm, { type UserFormValues } from '@/components/UserForm'
+
 import type { User } from '../types'
 import { userApi } from '../services/api'
-import { DataTable } from '@/components/DataTable'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, MoreHorizontalIcon } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
+import { SpinnerCustom } from '@/components/ui/spinner'
 
 const col = createColumnHelper<User>()
+const selectArray = (d: unknown) => (Array.isArray(d) ? d : [])
+
+const columns = [
+  col.accessor('id', { header: 'ID', size: 50, maxSize: 50 }),
+  col.accessor('name', { header: 'Имя', size: 150, maxSize: 200 }),
+  col.accessor('phone', { header: 'Телефон', size: 200, maxSize: 200 }),
+  col.accessor('startDate', {
+    header: 'Дата регистрации',
+    cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+    size: 150,
+    maxSize: 150,
+  }),
+]
+
+const coreRowModel = getCoreRowModel()
+const sortedRowModel = getSortedRowModel()
 
 const UsersPage = () => {
   const qc = useQueryClient()
@@ -48,18 +62,22 @@ const UsersPage = () => {
   const {
     data = [],
     isLoading,
+    isFetching,
     isError,
     error,
   } = useQuery({
     queryKey: ['users', search],
-    queryFn: async () => {
-      await new Promise((res) => setTimeout(res, 2000))
-      return userApi.getList(search)
-    },
-    select: (d) => (Array.isArray(d) ? d : []),
+    queryFn: () => userApi.getList(search),
+    select: selectArray,
+    staleTime: 30_000,
   })
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['users'] })
+  const invalidate = useCallback(() => qc.invalidateQueries({ queryKey: ['users'] }), [qc])
+
+  const handleSearch = () => {
+    if (searchInput === search) return
+    setSearch(searchInput)
+  }
 
   const handleAdd = () => {
     setEditingUser(null)
@@ -111,71 +129,54 @@ const UsersPage = () => {
     }
   })
 
-  const columns = [
-    col.accessor('id', { header: 'ID', size: 50 }),
-    col.accessor('name', { header: 'Имя', size: 150 }),
-    col.accessor('phone', { header: 'Телефон', size: 200 }),
-    col.accessor('startDate', {
-      header: 'Дата регистрации',
-      cell: (info) => new Date(info.getValue()).toLocaleDateString(),
-      size: 150,
-    }),
-
-    col.display({
-      id: 'actions',
-      header: '',
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="size-7">
-              <MoreHorizontalIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleEdit(row.original)}>Изменить</DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              onClick={() => handleDelete(row.original.id)}
-            >
-              Удалить
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
-    }),
-  ]
-
-  const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() })
+  const table = useReactTable({
+    data: (data as User[]) ?? [],
+    columns,
+    getCoreRowModel: coreRowModel,
+    getSortedRowModel: sortedRowModel,
+    autoResetPageIndex: false,
+  })
 
   return (
     <div className="pageConn">
       {ConfirmDialog}
-      <h2 className="text-xl font-semibold shrink-0">Пользователи</h2>
+
+      <h2 className="text-xl font-semibold">Пользователи</h2>
+
       {isError && (
-        <Alert variant="destructive" className="shrink-0">
+        <Alert variant="destructive">
           <AlertDescription>{(error as Error)?.message || 'Ошибка загрузки'}</AlertDescription>
         </Alert>
       )}
-      <div className="flex gap-2 shrink-0">
-        <div className="flex gap-2">
-          <Input
-            placeholder="Поиск по имени или телефону…"
-            className="w-75"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
-          />
-          <Button variant="outline" onClick={() => setSearch(searchInput)}>
-            Найти
-          </Button>
-        </div>
-        <Button onClick={handleAdd}>Добавить</Button>
-      </div>
 
+      <div className="flex gap-2">
+        <Input
+          placeholder="Поиск по имени или телефону…"
+          className="w-60"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+        />
+        <Button size="icon" variant="outline" onClick={handleSearch} disabled={isFetching}>
+          {isFetching ? <SpinnerCustom /> : <Search />}
+        </Button>
+
+        <Button onClick={handleAdd} size="icon">
+          <Plus />
+        </Button>
+      </div>
       <DataTable
         table={table}
         isLoading={isLoading}
-        onRowDoubleClick={(user) => handleEdit(user)}
+        minWidth={550}
+        rowActions={[
+          { label: 'Изменить', onClick: handleEdit },
+          {
+            label: 'Удалить',
+            onClick: (user) => handleDelete(user.id),
+            className: 'text-red-600',
+          },
+        ]}
       />
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>

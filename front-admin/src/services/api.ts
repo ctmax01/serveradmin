@@ -3,6 +3,7 @@ import type { User, DbConn, DbSql, DbUser, Report, Setting } from '../types'
 
 const apiClient = axios.create({
   baseURL: 'http://192.168.0.10:81/z-admin/core/admin',
+  timeout: 15000,
 })
 
 apiClient.interceptors.response.use(
