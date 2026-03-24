@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useNavigate } from '@tanstack/react-router'
 
 interface LoginFormValues {
   password: string
@@ -11,13 +11,17 @@ interface LoginFormValues {
 
 const LoginPage = () => {
   const navigate = useNavigate()
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>()
 
   const onSubmit = ({ password }: LoginFormValues) => {
     if (password === '009999') {
       sessionStorage.setItem('isLoggedIn', 'true')
       toast.success('Login successful!')
-      navigate('/')
+      navigate({ to: '/' })
     } else {
       toast.error('Incorrect password.')
     }
@@ -40,7 +44,9 @@ const LoginPage = () => {
               <p className="text-xs text-destructive">{errors.password.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full">Log In</Button>
+          <Button type="submit" className="w-full">
+            Log In
+          </Button>
         </form>
       </div>
     </div>

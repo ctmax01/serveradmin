@@ -3,7 +3,11 @@ import { cn } from '@/lib/utils'
 
 export const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => (
-    <table ref={ref} className={cn('w-full caption-bottom text-sm', className)} {...props} />
+    <table
+      ref={ref}
+      className={cn('w-full caption-bottom text-sm [&_tr:first-child]:border-0', className)}
+      {...props}
+    />
   ),
 )
 Table.displayName = 'Table'
@@ -12,27 +16,21 @@ export const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn('sticky top-0 z-10 [&_tr]:border-b', className)} {...props} />
+  <thead ref={ref} className={cn('sticky top-0 z-10', className)} {...props} />
 ))
 TableHeader.displayName = 'TableHeader'
 
 export const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <tbody ref={ref} className={cn('[&_tr:last-child]:border-0', className)} {...props} />
-))
+>(({ className, ...props }, ref) => <tbody ref={ref} className={cn(className)} {...props} />)
 TableBody.displayName = 'TableBody'
 
 export const TableFooter = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tfoot
-    ref={ref}
-    className={cn('border-t bg-muted/50 font-medium [&>tr]:last:border-b-0', className)}
-    {...props}
-  />
+  <tfoot ref={ref} className={cn('border-0 bg-muted/50 font-medium ', className)} {...props} />
 ))
 TableFooter.displayName = 'TableFooter'
 
@@ -43,7 +41,7 @@ export const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      'border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted',
+      'border-t   border-gray-300 transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted',
       className,
     )}
     {...props}
@@ -88,8 +86,6 @@ export const TableCaption = React.forwardRef<
   <caption ref={ref} className={cn('mt-4 text-sm text-muted-foreground', className)} {...props} />
 ))
 TableCaption.displayName = 'TableCaption'
-
-// ─── Обёртка с закруглёнными углами и двойным скроллом ─────────────────────
 
 interface ScrollableTableWrapperProps {
   maxHeight?: string | number

@@ -7,7 +7,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +18,9 @@ import { DbConnectionModal, type DbConnection } from '@/components/DbConnectionM
 
 import type { DbConn } from '../types'
 import { dbConnApi } from '../services/api'
+import { SpinnerCustom } from '@/components/ui/spinner'
+import { Plus, Search } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
 
 const col = createColumnHelper<DbConn>()
 const selectArray = (d: unknown) => (Array.isArray(d) ? d : [])
@@ -101,9 +103,9 @@ const DbConnPage = () => {
         toast.success('Создано')
       }
       invalidate()
-      setModalOpen(false)
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Ошибка')
+      throw err
     }
   }
 
@@ -119,7 +121,7 @@ const DbConnPage = () => {
     <div className="pageConn">
       {ConfirmDialog}
 
-      <h2 className="text-xl font-semibold">Подключения к БД</h2>
+      <h2 className="text-xl font-semibold">Базы данных</h2>
 
       {isError && (
         <Alert variant="destructive">
@@ -130,17 +132,19 @@ const DbConnPage = () => {
       <div className="flex gap-2">
         <Input
           placeholder="Поиск по ключу, названию, строке подключения…"
-          className="w-90"
+          className="w-90 min-w-30"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
         />
 
-        <Button variant="outline" onClick={handleSearch} disabled={isFetching}>
-          {isFetching ? 'Поиск…' : 'Найти'}
+        <Button size="icon" variant="outline" onClick={handleSearch} disabled={isFetching}>
+          {isFetching ? <SpinnerCustom /> : <Search />}
         </Button>
 
-        <Button onClick={handleAdd}>Добавить</Button>
+        <Button onClick={handleAdd} size="icon">
+          <Plus />
+        </Button>
       </div>
 
       <DataTable
@@ -150,7 +154,7 @@ const DbConnPage = () => {
         rowActions={[
           {
             label: 'Пользователи',
-            onClick: (db) => navigate(`/dbuser?dbKey=${db.dbKey}`),
+            onClick: (db) => navigate({ to: '/dbuser/$dbKey', params: { dbKey: db.dbKey } }),
           },
           { label: 'Изменить', onClick: handleEdit },
           {

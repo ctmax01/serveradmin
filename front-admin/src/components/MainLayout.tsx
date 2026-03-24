@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet } from '@tanstack/react-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import AppSidebar from '@/components/AppSidebar'
 
@@ -7,12 +7,9 @@ const MainLayout = () => {
     <TooltipProvider delayDuration={0}>
       <div className="flex h-screen overflow-hidden bg-background">
         <AppSidebar />
-        <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-          <div className="flex-1 overflow-hidden min-h-0">
-            <Outlet />
-          </div>
+        <div className="flex flex-1 flex-col overflow-hidden min-w-0 min-h-0">
+          <Outlet />
         </div>
-
       </div>
     </TooltipProvider>
   )

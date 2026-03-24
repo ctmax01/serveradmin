@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
 import {
   Database,
@@ -14,6 +13,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useLocation, useNavigate, useRouterState } from '@tanstack/react-router'
 
 const navItems = [
   { key: '/dbconn', icon: Database, label: 'Базы данных' },
@@ -26,19 +26,19 @@ const navItems = [
 const AppSidebar = () => {
   const [open, setOpen] = useState(true)
   const navigate = useNavigate()
-  const location = useLocation()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   const handleLogout = () => {
     sessionStorage.removeItem('isLoggedIn')
     toast.success('Logged out successfully.')
-    navigate('/login')
+    navigate({ to: '/login' })
   }
 
   const navBtn = (key: string, Icon: React.ElementType, label: string) => {
-    const active = location.pathname === key
+    const active = pathname === key
     return (
       <button
-        onClick={() => navigate(key)}
+        onClick={() => navigate({ to: key })}
         className={cn(
           'flex items-center gap-2.5 rounded-md py-2 text-sm transition-colors',
           active && 'bg-white text-black',

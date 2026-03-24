@@ -1,4 +1,3 @@
-// components/DbConnectionModal.tsx
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import {
@@ -11,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { SpinnerCustom } from './ui/spinner'
 
 export interface DbConnection {
   dbKey: string
@@ -66,46 +66,50 @@ export function DbConnectionModal({ open, onOpenChange, editing, onSave }: Props
   }, [open, editing])
 
   const handleSave = form.handleSubmit(async ({ dbKey, name, host, port }) => {
-    await onSave({ dbKey, name, conString: DEFAULT_CON(host, port) })
-    onOpenChange(false)
+    try {
+      await onSave({ dbKey, name, conString: DEFAULT_CON(host, port) })
+      onOpenChange(false)
+    } catch {}
   })
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle>
-            {editing ? 'Редактировать подключение' : 'Добавить подключение'}
-          </DialogTitle>
+          <DialogTitle>{editing ? 'Редактировать' : 'Добавить'}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* DB Key */}
-          <div className="space-y-1.5">
-            <Label>DB Key</Label>
-            <Input {...form.register('dbKey', { required: 'Обязательно' })} disabled={!!editing} />
-            {errors.dbKey && <p className="text-xs text-destructive">{errors.dbKey.message}</p>}
-          </div>
-
-          {/* Название */}
-          <div className="space-y-1.5">
-            <Label>Название</Label>
-            <Input {...form.register('name')} />
-          </div>
-
-          {/* Host + Port */}
+        <div className="space-y-1">
+          <Label>DB Key</Label>
+          <Input {...form.register('dbKey', { required: 'Обязательно' })} disabled={!!editing} />
+          {errors.dbKey && <p className="text-xs text-destructive">{errors.dbKey.message}</p>}
+          <Label>Название</Label>
+          <Input {...form.register('name')} />
           <div className="grid grid-cols-[1fr_100px] gap-2">
-            <div className="space-y-1.5">
+            <div>
               <Label>Host</Label>
               <Input
-                placeholder="26.10.10.1"
+                placeholder="192.168.0.1"
+                type="text"
                 {...form.register('host', { required: 'Обязательно' })}
               />
               {errors.host && <p className="text-xs text-destructive">{errors.host.message}</p>}
             </div>
-            <div className="space-y-1.5">
+            <div>
               <Label>Port</Label>
-              <Input placeholder="1433" {...form.register('port', { required: 'Обязательно' })} />
+              <Input
+                placeholder="1433"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                {...form.register('port', { required: 'Обязательно' })}
+                onChange={(e) => {
+                  e.target.value = e.target.value.replace(/\D/g, '')
+                }}
+              />
               {errors.port && <p className="text-xs text-destructive">{errors.port.message}</p>}
             </div>
           </div>
@@ -116,7 +120,7 @@ export function DbConnectionModal({ open, onOpenChange, editing, onSave }: Props
             Отмена
           </Button>
           <Button onClick={handleSave} disabled={isSubmitting}>
-            {isSubmitting ? 'Сохранение…' : 'Сохранить'}
+            {isSubmitting ? <SpinnerCustom /> : 'Сохранить'}
           </Button>
         </DialogFooter>
       </DialogContent>

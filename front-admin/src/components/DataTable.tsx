@@ -64,6 +64,13 @@ export function DataTable<TData>({
       ref={scrollRef}
       className={cn(
         'rounded-md border border-border overflow-auto w-full flex-1 min-h-0 relative',
+        'flex flex-col',
+        '[&::-webkit-scrollbar]:w-1.5',
+        '[&::-webkit-scrollbar]:h-1.5',
+        '[&::-webkit-scrollbar-track]:bg-transparent',
+        '[&::-webkit-scrollbar-thumb]:rounded-full',
+        '[&::-webkit-scrollbar-thumb]:bg-border',
+        '[&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground/50',
         className,
       )}
     >
@@ -72,6 +79,7 @@ export function DataTable<TData>({
           <SpinnerCustom />
         </div>
       )}
+
       <Table style={{ minWidth }}>
         <TableHeader>
           {table.getHeaderGroups().map((hg) => (
@@ -85,7 +93,7 @@ export function DataTable<TData>({
                     style={{ width: h.getSize(), minWidth: h.getSize() }}
                     className={cn(
                       'sticky top-0 z-10 bg-gray-200 select-none',
-                      canSort && 'cursor-pointer  hover:bg-gray-300',
+                      canSort && 'cursor-pointer hover:bg-gray-300',
                     )}
                     onClick={canSort ? h.column.getToggleSortingHandler() : undefined}
                   >
@@ -107,91 +115,91 @@ export function DataTable<TData>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
-          {rows.length ? (
-            <>
-              {paddingTop > 0 && (
-                <tr>
-                  <td style={{ height: paddingTop }} />
-                </tr>
-              )}
-              {virtualRows.map((virtualRow) => {
-                const row = rows[virtualRow.index]
-                const isSelected = selectedRow === row.original
-                return (
-                  <TableRow
-                    key={row.id}
-                    className={cn(
-                      'relative cursor-pointer transition-colors',
-                      isSelected ? 'bg-blue-200 hover:bg-blue-300' : 'hover:bg-muted/70',
-                    )}
-                    onClick={() => setSelectedRow(isSelected ? null : row.original)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        style={{
-                          width: cell.column.getSize(),
-                          minWidth: cell.column.getSize(),
-                          maxWidth: cell.column.getSize(),
-                        }}
-                        className={cn(isSelected ? 'bg-primary/5' : 'bg-background')}
-                      >
-                        <div className="truncate">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </div>
-                      </TableCell>
-                    ))}
 
-                    {rowActions && isSelected && (
-                      <td
-                        className="sticky right-0 p-0 border-none bg-transparent"
-                        style={{ width: 0, minWidth: 0, padding: 0 }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center pr-2">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="icon" className="size-7 bg-muted/50">
-                                <MoreHorizontalIcon />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {rowActions.map((action) => (
-                                <DropdownMenuItem
-                                  key={action.label}
-                                  className={action.className}
-                                  onClick={() => action.onClick(row.original)}
-                                >
-                                  {action.label}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </td>
-                    )}
-                  </TableRow>
-                )
-              })}
-              {paddingBottom > 0 && (
-                <tr>
-                  <td style={{ height: paddingBottom }} />
-                </tr>
-              )}
-            </>
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={table.getAllColumns().length}
-                className="h-24 text-center text-muted-foreground"
-              >
-                Нет данных
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
+        {rows.length > 0 && (
+          <TableBody>
+            {paddingTop > 0 && (
+              <tr>
+                <td style={{ height: paddingTop }} />
+              </tr>
+            )}
+            {virtualRows.map((virtualRow) => {
+              const row = rows[virtualRow.index]
+              const isSelected = selectedRow === row.original
+              return (
+                <TableRow
+                  key={row.id}
+                  className={cn(
+                    'relative cursor-pointer transition-colors',
+                    isSelected ? 'bg-blue-200 hover:bg-blue-300' : 'hover:bg-muted/70',
+                  )}
+                  onClick={() => setSelectedRow(isSelected ? null : row.original)}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      style={{
+                        width: cell.column.getSize(),
+                        minWidth: cell.column.getSize(),
+                        maxWidth: cell.column.getSize(),
+                      }}
+                      className={cn(isSelected ? 'bg-primary/5' : 'bg-background')}
+                    >
+                      <div className="truncate">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </div>
+                    </TableCell>
+                  ))}
+
+                  {rowActions && isSelected && (
+                    <td
+                      className="sticky right-0 p-0 border-none bg-transparent"
+                      style={{ width: 0, minWidth: 0, padding: 0 }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center pr-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="size-7 bg-white hover:bg-white min-w-5 min-h-5"
+                            >
+                              <MoreHorizontalIcon />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {rowActions.map((action) => (
+                              <DropdownMenuItem
+                                key={action.label}
+                                className={action.className}
+                                onClick={() => action.onClick(row.original)}
+                              >
+                                {action.label}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </td>
+                  )}
+                </TableRow>
+              )
+            })}
+            {paddingBottom > 0 && (
+              <tr>
+                <td style={{ height: paddingBottom }} />
+              </tr>
+            )}
+          </TableBody>
+        )}
       </Table>
+
+      {!rows.length && !isLoading && (
+        <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+          Нет данных
+        </div>
+      )}
     </div>
   )
 }
