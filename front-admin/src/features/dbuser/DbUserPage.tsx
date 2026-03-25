@@ -84,19 +84,19 @@ const DbUserPage = () => {
       {ConfirmDialog}
 
       <nav className="flex items-center gap-1 text-sm text-muted-foreground">
-        <button
+        <div
           onClick={() => navigate({ to: '/dbconn' })}
           className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer"
         >
           <Home className="h-4 w-4" />
-        </button>
+        </div>
         <ChevronRight className="h-3 w-3" />
-        <button
+        <div
           onClick={() => navigate({ to: '/dbconn' })}
           className="hover:text-foreground transition-colors cursor-pointer"
         >
           Подключения к БД
-        </button>
+        </div>
         <ChevronRight className="h-3 w-3" />
         <span className="text-foreground">{dbKeyParam ?? 'DB Users'}</span>
       </nav>

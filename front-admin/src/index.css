@@ -79,6 +79,23 @@
     height: 100%;
     overflow: hidden;
   }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: var(--border);
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
 }
 .pageConn {
   display: flex;

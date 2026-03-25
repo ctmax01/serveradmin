@@ -14,10 +14,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 import { useConfirm } from '@/hooks/useConfirm'
 import { DataTable } from '@/components/DataTable'
-import { DbConnectionModal, type DbConnection } from '@/components/DbConnectionModal'
+import { DbConnectionModal, type DbConnection } from '@/features/dbconn/DbConnectionModal'
 
-import type { DbConn } from '../types'
-import { dbConnApi } from '../services/api'
+import type { DbConn } from '../../types'
+import { dbConnApi } from '../../services/api'
 import { SpinnerCustom } from '@/components/ui/spinner'
 import { Plus, Search } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
@@ -154,7 +154,7 @@ const DbConnPage = () => {
         rowActions={[
           {
             label: 'Пользователи',
-            onClick: (db) => navigate({ to: '/dbuser/$dbKey', params: { dbKey: db.dbKey } }),
+            onClick: (db) => navigate({ to: '/dbconn/$dbKey/users', params: { dbKey: db.dbKey } }),
           },
           { label: 'Изменить', onClick: handleEdit },
           {

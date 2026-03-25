@@ -27,8 +27,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { useConfirm } from '@/hooks/useConfirm'
-import type { Setting } from '../types'
-import { settingApi, dbConnApi } from '../services/api'
+import type { Setting } from '../../types'
+import { settingApi, dbConnApi } from '../../services/api'
 
 const col = createColumnHelper<Setting>()
 
@@ -52,7 +52,12 @@ const SettingsPage = () => {
 
   const form = useForm<FormValues>()
 
-  const { data: items = [], isLoading, isError, error } = useQuery({
+  const {
+    data: items = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['settings', search],
     queryFn: () => settingApi.getAll(search || undefined),
     select: (d) => (Array.isArray(d) ? d : []),
@@ -131,8 +136,17 @@ const SettingsPage = () => {
       size: 140,
       cell: ({ row }) => (
         <div className="flex gap-1">
-          <Button variant="link" size="sm" onClick={() => handleEdit(row.original)}>Изменить</Button>
-          <Button variant="link" className="text-destructive hover:text-destructive/80 p-0 h-auto" size="sm" onClick={() => handleDelete(row.original.id)}>Удалить</Button>
+          <Button variant="link" size="sm" onClick={() => handleEdit(row.original)}>
+            Изменить
+          </Button>
+          <Button
+            variant="link"
+            className="text-destructive hover:text-destructive/80 p-0 h-auto"
+            size="sm"
+            onClick={() => handleDelete(row.original.id)}
+          >
+            Удалить
+          </Button>
         </div>
       ),
     }),
@@ -159,7 +173,9 @@ const SettingsPage = () => {
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
         />
-        <Button variant="outline" onClick={() => setSearch(searchInput)}>Найти</Button>
+        <Button variant="outline" onClick={() => setSearch(searchInput)}>
+          Найти
+        </Button>
         <Button onClick={handleAdd}>Добавить</Button>
       </div>
 
@@ -215,7 +231,9 @@ const SettingsPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {conns.map((c) => (
-                        <SelectItem key={c.dbKey} value={c.dbKey}>{c.name || c.dbKey}</SelectItem>
+                        <SelectItem key={c.dbKey} value={c.dbKey}>
+                          {c.name || c.dbKey}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -236,7 +254,9 @@ const SettingsPage = () => {
               <Label>Ключ настройки</Label>
               <Input {...form.register('settingKey', { required: 'Обязательно' })} />
               {form.formState.errors.settingKey && (
-                <p className="text-xs text-destructive">{form.formState.errors.settingKey.message}</p>
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.settingKey.message}
+                </p>
               )}
             </div>
             <div className="space-y-1.5">
@@ -252,7 +272,9 @@ const SettingsPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>Отмена</Button>
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
+              Отмена
+            </Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? 'Сохранение…' : 'Сохранить'}
             </Button>

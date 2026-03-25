@@ -22,8 +22,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { useConfirm } from '@/hooks/useConfirm'
-import type { Report } from '../types'
-import { reportApi } from '../services/api'
+import type { Report } from '../../types'
+import { reportApi } from '../../services/api'
 import { DataTable } from '@/components/DataTable'
 
 const col = createColumnHelper<Report>()
@@ -131,25 +131,6 @@ const ReportsPage = () => {
         </Badge>
       ),
     }),
-    col.display({
-      id: 'actions',
-      size: 140,
-      cell: ({ row }) => (
-        <div className="flex gap-1">
-          <Button variant="link" size="sm" onClick={() => handleEdit(row.original)}>
-            Изменить
-          </Button>
-          <Button
-            variant="link"
-            className="text-destructive hover:text-destructive/80 p-0 h-auto"
-            size="sm"
-            onClick={() => handleDelete(row.original.id)}
-          >
-            Удалить
-          </Button>
-        </div>
-      ),
-    }),
   ]
 
   const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() })
@@ -179,7 +160,14 @@ const ReportsPage = () => {
         <Button onClick={handleAdd}>+</Button>
       </div>
 
-      <DataTable table={table} isLoading={isLoading} />
+      <DataTable
+        table={table}
+        isLoading={isLoading}
+        rowActions={[
+          { label: 'Изменить', onClick: (report) => handleEdit(report) },
+          { label: 'Удалить', onClick: (report) => handleDelete(report.id) },
+        ]}
+      />
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>

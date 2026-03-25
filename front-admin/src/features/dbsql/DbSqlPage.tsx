@@ -28,8 +28,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { useConfirm } from '@/hooks/useConfirm'
-import type { DbSql } from '../types'
-import { dbSqlApi, dbConnApi } from '../services/api'
+import type { DbSql } from '../../types'
+import { dbSqlApi, dbConnApi } from '../../services/api'
 import { DataTable } from '@/components/DataTable'
 
 const col = createColumnHelper<DbSql>()

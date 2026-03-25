@@ -24,8 +24,8 @@ import { useConfirm } from '@/hooks/useConfirm'
 import { DataTable } from '@/components/DataTable'
 import UserForm, { type UserFormValues } from '@/components/UserForm'
 
-import type { User } from '../types'
-import { userApi } from '../services/api'
+import type { User } from '../../types'
+import { userApi } from '../../services/api'
 import { Plus, Search } from 'lucide-react'
 import { SpinnerCustom } from '@/components/ui/spinner'
 

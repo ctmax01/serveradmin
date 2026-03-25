@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -13,7 +14,7 @@ import {
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useLocation, useNavigate, useRouterState } from '@tanstack/react-router'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 
 const navItems = [
   { key: '/dbconn', icon: Database, label: 'Базы данных' },
@@ -33,9 +34,10 @@ const AppSidebar = () => {
     toast.success('Logged out successfully.')
     navigate({ to: '/login' })
   }
+  console.log(pathname + 'PATHNAME ')
 
-  const navBtn = (key: string, Icon: React.ElementType, label: string) => {
-    const active = pathname === key
+  const navBtn = (key: string, Icon: LucideIcon, label: string) => {
+    const active = pathname.startsWith(key)
     return (
       <button
         onClick={() => navigate({ to: key })}

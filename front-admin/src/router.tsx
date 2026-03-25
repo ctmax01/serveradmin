@@ -1,12 +1,12 @@
 import { createRootRoute, createRoute, createRouter, redirect } from '@tanstack/react-router'
 import MainLayout from './components/MainLayout'
-import LoginPage from './pages/LoginPage'
-import UsersPage from './pages/UsersPage'
-import DbConnPage from './pages/DbConnPage'
-import DbSqlPage from './pages/DbSqlPage'
+import LoginPage from './features/login/LoginPage'
+import UsersPage from './features/user/UsersPage'
+import DbConnPage from './features/dbconn/DbConnPage'
+import DbSqlPage from './features/dbsql/DbSqlPage'
 import DbUserPage from './features/dbuser/DbUserPage'
-import ReportsPage from './pages/ReportsPage'
-import SettingsPage from './pages/SettingsPage'
+import ReportsPage from './features/reports/ReportsPage'
+import SettingsPage from './features/settings/SettingsPage'
 
 const isLoggedIn = () => !!sessionStorage.getItem('isLoggedIn')
 
@@ -47,19 +47,17 @@ const dbConnRoute = createRoute({
   component: DbConnPage,
 })
 
+const dbUserRoute = createRoute({
+  getParentRoute: () => protectedLayout,
+  path: '/dbconn/$dbKey/users',
+  component: DbUserPage,
+  loader: ({ params }) => ({ dbKey: params.dbKey }),
+})
+
 const dbSqlRoute = createRoute({
   getParentRoute: () => protectedLayout,
   path: '/dbsql',
   component: DbSqlPage,
-})
-
-const dbUserRoute = createRoute({
-  getParentRoute: () => protectedLayout,
-  path: '/dbuser/$dbKey',
-  component: DbUserPage,
-  loader: async ({ params }) => {
-    return { dbKey: params.dbKey }
-  },
 })
 
 const reportsRoute = createRoute({
@@ -96,7 +94,10 @@ const routeTree = rootRoute.addChildren([
   catchAllRoute,
 ])
 
-export const router = createRouter({ routeTree })
+export const router = createRouter({
+  routeTree,
+  defaultNotFoundComponent: () => <div>404</div>,
+})
 
 // типизация
 declare module '@tanstack/react-router' {

@@ -16,7 +16,7 @@ import { userApi } from '@/services/api'
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreated: (userId: number) => void
+  onCreated: (userId: number, userName: string) => void
 }
 
 export function CreateUserDialog({ open, onOpenChange, onCreated }: Props) {
@@ -30,7 +30,7 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: Props) {
       const newUser = await userApi.create({ ...values, password: values.password ?? '' })
       toast.success('Пользователь создан')
       qc.invalidateQueries({ queryKey: ['users-search'] })
-      onCreated(newUser.id)
+      onCreated(newUser.id, values.name)
       onOpenChange(false)
       form.reset()
     } catch (err: unknown) {

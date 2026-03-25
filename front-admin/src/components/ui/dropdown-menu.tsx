@@ -6,7 +6,11 @@ import { cn } from '@/lib/utils'
 
 const DropdownMenu = DropdownMenuPrimitive.Root
 
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
+function DropdownMenuTrigger({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger> & { children?: React.ReactNode }) {
+  return <DropdownMenuPrimitive.Trigger {...props} />
+}
 
 const DropdownMenuGroup = DropdownMenuPrimitive.Group
 
