@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { User, DbConn, DbSql, DbUser, Report, Setting } from '../types'
+import type { User, DbConn, DbSql, DbUser, Report, ReportColumn, DocSetting } from '../types'
 
 const apiClient = axios.create({
   baseURL: 'http://192.168.0.10:81/z-admin/core/admin',
@@ -73,18 +73,34 @@ const dbUserApi = {
 const reportApi = {
   getAll: (search?: string): Promise<Report[]> =>
     apiClient.get('/reports/', { params: search ? { search } : undefined }),
-  create: (data: Omit<Report, 'id'>): Promise<void> => apiClient.post('/reports/', data),
+
+  getOne: (id: number): Promise<Report> => apiClient.get('/reports/', { params: { id } }),
+
+  create: (data: Omit<Report, 'id'>): Promise<{ id: number }> => apiClient.post('/reports/', data),
+
   update: (data: Report): Promise<void> => apiClient.put('/reports/', data),
+
   delete: (id: number): Promise<void> => apiClient.delete('/reports/', { data: { id } }),
 }
 
+const reportColumnApi = {
+  getByReport: (reportId: number): Promise<ReportColumn[]> =>
+    apiClient.get('/reports/columns/', { params: { reportId } }),
+
+  create: (data: Omit<ReportColumn, 'id'>): Promise<{ id: number }> =>
+    apiClient.post('/reports/columns/', data),
+
+  update: (data: ReportColumn): Promise<void> => apiClient.put('/reports/columns/', data),
+
+  delete: (id: number): Promise<void> => apiClient.delete('/reports/columns/', { data: { id } }),
+}
 // --- Settings ---
-const settingApi = {
-  getAll: (search?: string): Promise<Setting[]> =>
-    apiClient.get('/settings/', { params: search ? { search } : undefined }),
-  create: (data: Omit<Setting, 'id'>): Promise<void> => apiClient.post('/settings/', data),
-  update: (data: Setting): Promise<void> => apiClient.put('/settings/', data),
-  delete: (id: number): Promise<void> => apiClient.delete('/settings/', { data: { id } }),
+const docSettingApi = {
+  getAll: (search?: string): Promise<DocSetting[]> =>
+    apiClient.get('/doc-settings/', { params: search ? { search } : undefined }),
+  create: (data: Omit<DocSetting, 'id'>): Promise<void> => apiClient.post('/doc-settings/', data),
+  update: (data: DocSetting): Promise<void> => apiClient.put('/doc-settings/', data),
+  delete: (id: number): Promise<void> => apiClient.delete('/doc-settings/', { data: { id } }),
 }
 
-export { userApi, dbConnApi, dbSqlApi, dbUserApi, reportApi, settingApi }
+export { userApi, dbConnApi, dbSqlApi, dbUserApi, reportApi, docSettingApi, reportColumnApi }

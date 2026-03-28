@@ -21,6 +21,7 @@ import { dbConnApi } from '../../services/api'
 import { SpinnerCustom } from '@/components/ui/spinner'
 import { Plus, Search } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
+import { DocSettingsModal } from './DocSettingsModal'
 
 const col = createColumnHelper<DbConn>()
 const selectArray = (d: unknown) => (Array.isArray(d) ? d : [])
@@ -46,6 +47,8 @@ const DbConnPage = () => {
   const [searchInput, setSearchInput] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<DbConn | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsDbKey, setSettingsDbKey] = useState<string | null>(null)
 
   const {
     data = [],
@@ -108,6 +111,10 @@ const DbConnPage = () => {
       throw err
     }
   }
+  const handleSettings = (db: DbConn) => {
+    setSettingsDbKey(db.dbKey)
+    setSettingsOpen(true)
+  }
 
   const table = useReactTable({
     data: (data as DbConn[]) ?? [],
@@ -156,6 +163,7 @@ const DbConnPage = () => {
             label: 'Пользователи',
             onClick: (db) => navigate({ to: '/dbconn/$dbKey/users', params: { dbKey: db.dbKey } }),
           },
+          { label: 'Настройки документов', onClick: handleSettings },
           { label: 'Изменить', onClick: handleEdit },
           {
             label: 'Удалить',
@@ -171,6 +179,7 @@ const DbConnPage = () => {
         editing={editing}
         onSave={handleSave}
       />
+      <DocSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} dbKey={settingsDbKey} />
     </div>
   )
 }

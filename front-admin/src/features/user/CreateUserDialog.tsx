@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import UserForm, { type UserFormValues } from '@/components/UserForm'
+import UserForm, { type UserFormValues } from '@/features/user/UserForm'
 import { useState } from 'react'
 import { userApi } from '@/services/api'
 

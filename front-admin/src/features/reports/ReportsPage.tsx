@@ -1,40 +1,45 @@
+// features/reports/ReportsPage.tsx
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  createColumnHelper,
-} from '@tanstack/react-table'
+import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'
+import { Plus, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { useConfirm } from '@/hooks/useConfirm'
-import type { Report } from '../../types'
-import { reportApi } from '../../services/api'
 import { DataTable } from '@/components/DataTable'
+import { SpinnerCustom } from '@/components/ui/spinner'
+import { useConfirm } from '@/hooks/useConfirm'
+import { reportApi } from '@/services/api'
+import type { Report } from '@/types'
+import { ReportFormDialog } from './ReportFormDialog'
+import { ReportColumnsDialog } from './ReportColumnsDialog'
 
 const col = createColumnHelper<Report>()
 
-interface FormValues {
-  code: string
-  name: string
-  description: string
-  sortOrder: number
-  isActive: boolean
-}
+const columns = [
+  col.accessor('id', { header: 'ID', size: 60 }),
+  col.accessor('name', { header: 'Название' }),
+  col.accessor('description', {
+    header: 'Описание',
+    cell: (info) => <span className="block truncate max-w-xs">{info.getValue()}</span>,
+  }),
+  col.accessor('queryType', { header: 'Тип', size: 70 }),
+  col.accessor('sortOrder', { header: 'Порядок', size: 80 }),
+  col.accessor('isActive', {
+    header: 'Активен',
+    size: 90,
+    cell: (info) => (
+      <Badge
+        variant="secondary"
+        className={info.getValue() ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
+      >
+        {info.getValue() ? 'Да' : 'Нет'}
+      </Badge>
+    ),
+  }),
+]
 
 const ReportsPage = () => {
   const qc = useQueryClient()
@@ -43,14 +48,14 @@ const ReportsPage = () => {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  const [columnsDialogOpen, setColumnsDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Report | null>(null)
-  const [saving, setSaving] = useState(false)
-
-  const form = useForm<FormValues>()
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null)
 
   const {
     data: items = [],
     isLoading,
+    isFetching,
     isError,
     error,
   } = useQuery({
@@ -63,24 +68,21 @@ const ReportsPage = () => {
 
   const handleAdd = () => {
     setEditing(null)
-    form.reset({ code: '', name: '', description: '', sortOrder: 0, isActive: true })
     setModalOpen(true)
   }
 
   const handleEdit = (record: Report) => {
     setEditing(record)
-    form.reset({
-      code: record.code,
-      name: record.name,
-      description: record.description ?? '',
-      sortOrder: record.sortOrder ?? 0,
-      isActive: record.isActive,
-    })
     setModalOpen(true)
   }
 
+  const handleColumns = (record: Report) => {
+    setSelectedReport(record)
+    setColumnsDialogOpen(true)
+  }
+
   const handleDelete = async (id: number) => {
-    const ok = await confirm({ title: 'Удалить отчёт?' })
+    const ok = await confirm({ title: 'Удалить отчёт? Все колонки и права будут удалены.' })
     if (!ok) return
     try {
       await reportApi.delete(id)
@@ -91,53 +93,17 @@ const ReportsPage = () => {
     }
   }
 
-  const handleSave = form.handleSubmit(async (values) => {
-    setSaving(true)
-    try {
-      if (editing) {
-        await reportApi.update({ ...values, id: editing.id })
-        toast.success('Обновлено')
-      } else {
-        await reportApi.create(values)
-        toast.success('Создано')
-      }
-      setModalOpen(false)
-      invalidate()
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Ошибка')
-    } finally {
-      setSaving(false)
-    }
+  const table = useReactTable({
+    data: items,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    autoResetPageIndex: false,
   })
-
-  const columns = [
-    col.accessor('id', { header: 'ID', size: 60 }),
-    col.accessor('code', { header: 'Код' }),
-    col.accessor('name', { header: 'Название' }),
-    col.accessor('description', {
-      header: 'Описание',
-      cell: (info) => <span className="block truncate max-w-xs">{info.getValue()}</span>,
-    }),
-    col.accessor('sortOrder', { header: 'Порядок', size: 90 }),
-    col.accessor('isActive', {
-      header: 'Активен',
-      size: 90,
-      cell: (info) => (
-        <Badge
-          variant="secondary"
-          className={info.getValue() ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}
-        >
-          {info.getValue() ? 'Да' : 'Нет'}
-        </Badge>
-      ),
-    }),
-  ]
-
-  const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() })
 
   return (
     <div className="pageConn">
       {ConfirmDialog}
+
       <h2 className="text-xl font-semibold">Отчёты</h2>
 
       {isError && (
@@ -148,76 +114,42 @@ const ReportsPage = () => {
 
       <div className="flex gap-2">
         <Input
-          placeholder="Поиск по коду, названию, описанию…"
+          placeholder="Поиск по названию, описанию…"
           className="w-80"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
         />
-        <Button variant="outline" onClick={() => setSearch(searchInput)}>
-          Найти
+        <Button variant="outline" size="icon" onClick={() => setSearch(searchInput)}>
+          {isFetching ? <SpinnerCustom /> : <Search />}
         </Button>
-        <Button onClick={handleAdd}>+</Button>
+        <Button size="icon" onClick={handleAdd}>
+          <Plus />
+        </Button>
       </div>
 
       <DataTable
         table={table}
         isLoading={isLoading}
         rowActions={[
-          { label: 'Изменить', onClick: (report) => handleEdit(report) },
-          { label: 'Удалить', onClick: (report) => handleDelete(report.id) },
+          { label: 'Изменить', onClick: handleEdit },
+          { label: 'Колонки', onClick: handleColumns },
+          { label: 'Удалить', onClick: (r) => handleDelete(r.id), className: 'text-red-600' },
         ]}
       />
 
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editing ? 'Редактировать отчёт' : 'Добавить отчёт'}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Код</Label>
-              <Input {...form.register('code', { required: 'Обязательно' })} />
-              {form.formState.errors.code && (
-                <p className="text-xs text-destructive">{form.formState.errors.code.message}</p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label>Название</Label>
-              <Input {...form.register('name', { required: 'Обязательно' })} />
-              {form.formState.errors.name && (
-                <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label>Описание</Label>
-              <Input {...form.register('description')} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Порядок сортировки</Label>
-              <Input type="number" {...form.register('sortOrder', { valueAsNumber: true })} />
-            </div>
-            <div className="flex items-center gap-3">
-              <Controller
-                name="isActive"
-                control={form.control}
-                render={({ field }) => (
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                )}
-              />
-              <Label>Активен</Label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
-              Отмена
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Сохранение…' : 'Сохранить'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ReportFormDialog
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        editing={editing}
+        onSaved={invalidate}
+      />
+
+      <ReportColumnsDialog
+        open={columnsDialogOpen}
+        onOpenChange={setColumnsDialogOpen}
+        report={selectedReport}
+      />
     </div>
   )
 }

@@ -21,7 +21,6 @@ const navItems = [
   { key: '/users', icon: Users, label: 'Пользователи' },
   { key: '/dbsql', icon: Code, label: 'DB SQL' },
   { key: '/reports', icon: FileText, label: 'Reports' },
-  { key: '/settings', icon: Settings, label: 'Settings' },
 ]
 
 const AppSidebar = () => {

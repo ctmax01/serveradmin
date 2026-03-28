@@ -12,6 +12,7 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { SpinnerCustom } from '@/components/ui/spinner'
+import { toast } from 'sonner'
 
 interface ServerSelectProps<T> {
   value: T | null
@@ -54,14 +55,21 @@ export function ServerSelect<T>({
   const displayLabel = value ? getLabel(value) : undefined
 
   const handleSearch = () => {
+    if (query.length < 2) {
+      toast.error('Введите минимум 2 символа')
+      return
+    }
     setSubmitted(true)
     onSearch(query)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch()
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      e.stopPropagation()
+      handleSearch()
+    }
   }
-
   const handleSelect = (item: T) => {
     onChange(item)
     setOpen(false)
@@ -79,15 +87,12 @@ export function ServerSelect<T>({
           className={cn('w-full justify-between font-normal', className)}
         >
           <span className={selectedId != null ? '' : 'text-muted-foreground'}>
-            {selectedId != null ? `ID:${selectedId} ${displayLabel ?? ''}`.trim() : placeholder}
+            {selectedId != null ? `${selectedId} ${displayLabel ?? ''}`.trim() : placeholder}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="p-0 z-50 w-[calc(var(--radix-popover-trigger-width)+7.75rem)]"
-        align="start"
-      >
+      <PopoverContent className="p-0 z-50 w-(--radix-popover-trigger-width)" align="start">
         <Command shouldFilter={false} className="h-auto">
           <div className="flex p-1.5 gap-1.5 shrink-0">
             <Input
@@ -104,10 +109,13 @@ export function ServerSelect<T>({
 
           {!submitted && (
             <div className="py-2 text-center text-sm text-muted-foreground shrink-0">
-              {hintText}
+              {query.length > 0 && query.length < 2 ? (
+                <span className="text-destructive">Минимум 2 символа</span>
+              ) : (
+                hintText
+              )}
             </div>
           )}
-
           <CommandList className="max-h-50">
             <CommandEmpty>{submitted && !isLoading ? emptyText : null}</CommandEmpty>
             <CommandGroup>

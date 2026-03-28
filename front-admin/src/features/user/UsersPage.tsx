@@ -22,12 +22,13 @@ import {
 
 import { useConfirm } from '@/hooks/useConfirm'
 import { DataTable } from '@/components/DataTable'
-import UserForm, { type UserFormValues } from '@/components/UserForm'
+import UserForm, { type UserFormValues } from '@/features/user/UserForm'
 
 import type { User } from '../../types'
 import { userApi } from '../../services/api'
 import { Plus, Search } from 'lucide-react'
 import { SpinnerCustom } from '@/components/ui/spinner'
+import { formatDate } from '@/utils/date_parse'
 
 const col = createColumnHelper<User>()
 const selectArray = (d: unknown) => (Array.isArray(d) ? d : [])
@@ -38,9 +39,8 @@ const columns = [
   col.accessor('phone', { header: 'Телефон', size: 200, maxSize: 200 }),
   col.accessor('startDate', {
     header: 'Дата регистрации',
-    cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+    cell: (info) => formatDate(info.getValue()),
     size: 150,
-    maxSize: 150,
   }),
 ]
 

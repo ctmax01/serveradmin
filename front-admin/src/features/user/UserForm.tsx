@@ -39,12 +39,6 @@ const UserForm = ({ register, errors, isEditing }: UserFormProps) => {
         />
         {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
       </div>
-      {isEditing && (
-        <div className="space-y-1.5">
-          <Label>Last DB Key</Label>
-          <Input {...register('lastDbKey')} />
-        </div>
-      )}
     </div>
   )
 }
