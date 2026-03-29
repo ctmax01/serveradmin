@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { createColumnHelper, getCoreRowModel, useReactTable } from '@tanstack/react-table'
 import { Plus, Search } from 'lucide-react'
@@ -19,42 +19,40 @@ import {
 import { useConfirm } from '@/hooks/useConfirm'
 import { DataTable } from '@/components/DataTable'
 import { SpinnerCustom } from '@/components/ui/spinner'
-import type { DbSql, DbConn } from '@/types'
-import { dbSqlApi, dbConnApi } from '@/services/api'
-import { ServerSelect } from '@/components/ui/server-select'
+import type { DbSql } from '@/types'
+import { dbSqlApi } from '@/services/api'
+import { dbSqlRoute } from '@/router'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const col = createColumnHelper<DbSql>()
 
 const columns = [
   col.accessor('id', { header: 'ID', size: 60 }),
-  col.accessor('dbKey', { header: 'DB Key' }),
   col.accessor('sqlKey', { header: 'SQL Key' }),
   col.accessor('sqlValue', {
     header: 'SQL Value',
     cell: (info) => <span className="block truncate max-w-xs">{info.getValue()}</span>,
   }),
-  col.accessor('connName', { header: 'Подключение' }),
 ]
 
 interface FormValues {
-  dbConn: DbConn | null
   sqlKey: string
   sqlValue: string
 }
 
 const DbSqlPage = () => {
+  const { dbKey } = dbSqlRoute.useParams()
   const qc = useQueryClient()
   const { confirm, ConfirmDialog } = useConfirm()
 
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
-  const [connSearch, setConnSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<DbSql | null>(null)
   const [saving, setSaving] = useState(false)
 
   const form = useForm<FormValues>({
-    defaultValues: { dbConn: null, sqlKey: '', sqlValue: '' },
+    defaultValues: { sqlKey: '', sqlValue: '' },
   })
 
   const {
@@ -64,33 +62,22 @@ const DbSqlPage = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ['dbsql', search],
-    queryFn: () => dbSqlApi.getAll(search || undefined),
+    queryKey: ['dbsql', dbKey, search],
+    queryFn: () => dbSqlApi.getAll(dbKey, search || undefined),
     select: (d) => (Array.isArray(d) ? d : []),
   })
 
-  const { data: conns = [], isFetching: connsFetching } = useQuery({
-    queryKey: ['dbconn', connSearch],
-    queryFn: () => dbConnApi.getAll(connSearch || undefined),
-    select: (d) => (Array.isArray(d) ? d : []),
-    enabled: modalOpen,
-  })
-
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['dbsql'] })
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['dbsql', dbKey] })
 
   const handleAdd = () => {
     setEditing(null)
-    form.reset({ dbConn: null, sqlKey: '', sqlValue: '' })
+    form.reset({ sqlKey: '', sqlValue: '' })
     setModalOpen(true)
   }
 
   const handleEdit = (record: DbSql) => {
     setEditing(record)
-    form.reset({
-      dbConn: { dbKey: record.dbKey, name: record.connName } as DbConn,
-      sqlKey: record.sqlKey,
-      sqlValue: record.sqlValue ?? '',
-    })
+    form.reset({ sqlKey: record.sqlKey, sqlValue: record.sqlValue ?? '' })
     setModalOpen(true)
   }
 
@@ -107,17 +94,9 @@ const DbSqlPage = () => {
   }
 
   const handleSave = form.handleSubmit(async (values) => {
-    if (!values.dbConn) {
-      toast.error('Выберите подключение')
-      return
-    }
     setSaving(true)
     try {
-      const payload = {
-        dbKey: values.dbConn.dbKey,
-        sqlKey: values.sqlKey,
-        sqlValue: values.sqlValue,
-      }
+      const payload = { dbKey, sqlKey: values.sqlKey, sqlValue: values.sqlValue }
       if (editing) {
         await dbSqlApi.update({ ...payload, id: editing.id })
         toast.success('Обновлено')
@@ -145,7 +124,7 @@ const DbSqlPage = () => {
     <div className="pageConn">
       {ConfirmDialog}
 
-      <h2 className="text-xl font-semibold">DB SQL</h2>
+      <Breadcrumbs dbKey={dbKey} label="SQL" />
 
       {isError && (
         <Alert variant="destructive">
@@ -155,8 +134,8 @@ const DbSqlPage = () => {
 
       <div className="flex gap-2">
         <Input
-          placeholder="Поиск по dbKey, sqlKey, значению…"
-          className="w-80"
+          placeholder="Поиск по sqlKey, значению…"
+          className="max-w-90 min-w-30"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
@@ -179,40 +158,17 @@ const DbSqlPage = () => {
       />
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent
+          className="max-w-xl"
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+          aria-describedby={undefined}
+        >
           <DialogHeader>
             <DialogTitle>{editing ? 'Редактировать SQL' : 'Добавить SQL'}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-3">
-            <div className="space-y-1">
-              <Label>
-                Подключение <span className="text-destructive">*</span>
-              </Label>
-              <Controller
-                name="dbConn"
-                control={form.control}
-                rules={{ required: 'Обязательно' }}
-                render={({ field }) => (
-                  <ServerSelect<DbConn>
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={conns}
-                    getValue={(c) => c.dbKey}
-                    getLabel={(c) => c.name || c.dbKey}
-                    onSearch={setConnSearch}
-                    isLoading={connsFetching}
-                    placeholder="Выберите подключение…"
-                    searchPlaceholder="Поиск по названию…"
-                    hintText="Введите запрос и нажмите поиск"
-                  />
-                )}
-              />
-              {form.formState.errors.dbConn && (
-                <p className="text-xs text-destructive">{form.formState.errors.dbConn.message}</p>
-              )}
-            </div>
-
             <div className="space-y-1">
               <Label>
                 SQL Key <span className="text-destructive">*</span>
@@ -222,7 +178,6 @@ const DbSqlPage = () => {
                 <p className="text-xs text-destructive">{form.formState.errors.sqlKey.message}</p>
               )}
             </div>
-
             <div className="space-y-1">
               <Label>SQL Value</Label>
               <Textarea rows={5} className="font-mono text-sm" {...form.register('sqlValue')} />

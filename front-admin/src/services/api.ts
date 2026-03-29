@@ -48,8 +48,13 @@ const dbConnApi = {
 
 // --- DB SQL ---
 const dbSqlApi = {
-  getAll: (search?: string): Promise<DbSql[]> =>
-    apiClient.get('/dbsql/', { params: search ? { search } : undefined }),
+  getAll: (dbKey?: string, search?: string): Promise<DbSql[]> =>
+    apiClient.get('/dbsql/', {
+      params: {
+        ...(dbKey ? { dbKey } : {}),
+        ...(search ? { search } : {}),
+      },
+    }),
   create: (data: { dbKey: string; sqlKey: string; sqlValue?: string }): Promise<void> =>
     apiClient.post('/dbsql/', data),
   update: (data: { id: number; dbKey: string; sqlKey: string; sqlValue?: string }): Promise<void> =>
@@ -96,8 +101,8 @@ const reportColumnApi = {
 }
 // --- Settings ---
 const docSettingApi = {
-  getAll: (search?: string): Promise<DocSetting[]> =>
-    apiClient.get('/doc-settings/', { params: search ? { search } : undefined }),
+  getAll: (dbKey?: string, search?: string): Promise<DocSetting[]> =>
+    apiClient.get('/doc-settings/', { params: search ? { dbKey, search } : { dbKey } }),
   create: (data: Omit<DocSetting, 'id'>): Promise<void> => apiClient.post('/doc-settings/', data),
   update: (data: DocSetting): Promise<void> => apiClient.put('/doc-settings/', data),
   delete: (id: number): Promise<void> => apiClient.delete('/doc-settings/', { data: { id } }),

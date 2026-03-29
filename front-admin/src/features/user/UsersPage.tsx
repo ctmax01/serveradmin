@@ -29,6 +29,7 @@ import { userApi } from '../../services/api'
 import { Plus, Search } from 'lucide-react'
 import { SpinnerCustom } from '@/components/ui/spinner'
 import { formatDate } from '@/utils/date_parse'
+import Title from '@/components/ui/title'
 
 const col = createColumnHelper<User>()
 const selectArray = (d: unknown) => (Array.isArray(d) ? d : [])
@@ -138,70 +139,75 @@ const UsersPage = () => {
   })
 
   return (
-    <div className="pageConn">
-      {ConfirmDialog}
+    <>
+      <Title title="Пользоваетли" />
+      <div className="pageConn">
+        {ConfirmDialog}
 
-      <h2 className="text-xl font-semibold">Пользователи</h2>
+        {isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{(error as Error)?.message || 'Ошибка загрузки'}</AlertDescription>
+          </Alert>
+        )}
 
-      {isError && (
-        <Alert variant="destructive">
-          <AlertDescription>{(error as Error)?.message || 'Ошибка загрузки'}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="flex gap-2">
-        <Input
-          placeholder="Поиск по имени или телефону…"
-          className="w-60"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-        />
-        <Button size="icon" variant="outline" onClick={handleSearch} disabled={isFetching}>
-          {isFetching ? <SpinnerCustom /> : <Search />}
-        </Button>
-
-        <Button onClick={handleAdd} size="icon">
-          <Plus />
-        </Button>
-      </div>
-      <DataTable
-        table={table}
-        isLoading={isLoading}
-        minWidth={550}
-        rowActions={[
-          { label: 'Изменить', onClick: handleEdit },
-          {
-            label: 'Удалить',
-            onClick: (user) => handleDelete(user.id),
-            className: 'text-red-600',
-          },
-        ]}
-      />
-
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {editingUser ? 'Редактировать пользователя' : 'Добавить пользователя'}
-            </DialogTitle>
-          </DialogHeader>
-          <UserForm
-            register={form.register}
-            errors={form.formState.errors}
-            isEditing={!!editingUser}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Поиск по имени или телефону…"
+            value={searchInput}
+            className="max-w-90 min-w-30"
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
-              Отмена
-            </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Сохранение…' : 'Сохранить'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+          <Button size="icon" variant="outline" onClick={handleSearch} disabled={isFetching}>
+            {isFetching ? <SpinnerCustom /> : <Search />}
+          </Button>
+
+          <Button onClick={handleAdd} size="icon">
+            <Plus />
+          </Button>
+        </div>
+        <DataTable
+          table={table}
+          isLoading={isLoading}
+          minWidth={550}
+          rowActions={[
+            { label: 'Изменить', onClick: handleEdit },
+            {
+              label: 'Удалить',
+              onClick: (user) => handleDelete(user.id),
+              className: 'text-red-600',
+            },
+          ]}
+        />
+
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogContent
+            onInteractOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+            aria-describedby={undefined}
+          >
+            <DialogHeader>
+              <DialogTitle>
+                {editingUser ? 'Редактировать пользователя' : 'Добавить пользователя'}
+              </DialogTitle>
+            </DialogHeader>
+            <UserForm
+              register={form.register}
+              errors={form.formState.errors}
+              isEditing={!!editingUser}
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setModalOpen(false)}>
+                Отмена
+              </Button>
+              <Button onClick={handleSave} disabled={saving}>
+                {saving ? 'Сохранение…' : 'Сохранить'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
   )
 }
 

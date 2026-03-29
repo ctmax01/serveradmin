@@ -42,7 +42,11 @@ export function CreateUserDialog({ open, onOpenChange, onCreated }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        aria-describedby={undefined}
+      >
         <DialogHeader>
           <DialogTitle>Добавить пользователя</DialogTitle>
         </DialogHeader>

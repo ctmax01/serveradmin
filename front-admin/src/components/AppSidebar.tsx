@@ -1,16 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import {
-  Database,
-  Users,
-  Code,
-  FileText,
-  Settings,
-  LogOut,
-  PanelLeftClose,
-  PanelLeftOpen,
-} from 'lucide-react'
+import { Database, Users, FileText, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -19,44 +10,38 @@ import { useNavigate, useRouterState } from '@tanstack/react-router'
 const navItems = [
   { key: '/dbconn', icon: Database, label: 'Базы данных' },
   { key: '/users', icon: Users, label: 'Пользователи' },
-  { key: '/dbsql', icon: Code, label: 'DB SQL' },
   { key: '/reports', icon: FileText, label: 'Reports' },
 ]
 
 const AppSidebar = () => {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(() => window.innerWidth >= 600)
   const navigate = useNavigate()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
+
+  const handleNav = (key: string) => {
+    navigate({ to: key })
+    if (window.innerWidth < 600) setOpen(false)
+  }
 
   const handleLogout = () => {
     sessionStorage.removeItem('isLoggedIn')
     toast.success('Logged out successfully.')
     navigate({ to: '/login' })
   }
-  console.log(pathname + 'PATHNAME ')
 
   const navBtn = (key: string, Icon: LucideIcon, label: string) => {
     const active = pathname.startsWith(key)
     return (
       <button
-        onClick={() => navigate({ to: key })}
+        onClick={() => handleNav(key)}
         className={cn(
           'flex items-center gap-2.5 rounded-md py-2 text-sm transition-colors',
           active && 'bg-white text-black',
-          open ? 'w-[calc(100%-8px)] mx-1 px-2' : 'w-8 justify-center mx-auto',
+          open ? 'w-52 px-2' : 'w-8 justify-center mx-auto',
         )}
       >
         <Icon className="size-4 shrink-0" />
-        {open && (
-          <span
-            className={cn(
-              'truncate transition-opacity duration-150',
-              open ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden',
-            )}
-          >
-            {label}
-          </span>
-        )}
+        {open && <span className="truncate transition-opacity duration-150">{label}</span>}
       </button>
     )
   }
@@ -89,7 +74,7 @@ const AppSidebar = () => {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-2 space-y-1">
+      <nav className="h-full flex flex-col items-center overflow-y-auto py-2 space-y-1">
         {navItems.map(({ key, icon: Icon, label }) =>
           open ? (
             <div key={key}>{navBtn(key, Icon, label)}</div>
@@ -102,7 +87,6 @@ const AppSidebar = () => {
         )}
       </nav>
 
-      {/* Footer */}
       <div className="shrink-0 py-2 border-t border-sidebar-border">
         {open ? (
           <button

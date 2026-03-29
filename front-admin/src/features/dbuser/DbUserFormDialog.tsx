@@ -87,8 +87,9 @@ export function DbUserFormDialog({ open, onOpenChange, editing, dbKeyParam, onSa
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="max-w-2xl max-h-[90vh] flex flex-col"
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
         aria-describedby={undefined}
       >
         <DialogHeader>
@@ -102,7 +103,7 @@ export function DbUserFormDialog({ open, onOpenChange, editing, dbKeyParam, onSa
           </div>
         </DialogHeader>
 
-        <div className="py-2">
+        <div className="flex-1 overflow-y-auto py-2 min-h-0 p-1">
           {step === 1 && (
             <StepUserSelect
               form={form}

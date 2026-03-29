@@ -6,6 +6,7 @@ import DbConnPage from './features/dbconn/DbConnPage'
 import DbSqlPage from './features/dbsql/DbSqlPage'
 import DbUserPage from './features/dbuser/DbUserPage'
 import ReportsPage from './features/reports/ReportsPage'
+import DocSettingsPage from './features/dbsettings/DocSettingsPage'
 
 const isLoggedIn = () => !!sessionStorage.getItem('isLoggedIn')
 
@@ -53,9 +54,15 @@ const dbUserRoute = createRoute({
   loader: ({ params }) => ({ dbKey: params.dbKey }),
 })
 
+const dbSettingsRoute = createRoute({
+  getParentRoute: () => protectedLayout,
+  path: '/dbconn/$dbKey/settings',
+  component: DocSettingsPage,
+})
+
 const dbSqlRoute = createRoute({
   getParentRoute: () => protectedLayout,
-  path: '/dbsql',
+  path: '/dbconn/$dbKey/sql',
   component: DbSqlPage,
 })
 
@@ -82,6 +89,7 @@ const routeTree = rootRoute.addChildren([
     dbSqlRoute,
     dbUserRoute,
     reportsRoute,
+    dbSettingsRoute,
   ]),
   catchAllRoute,
 ])
@@ -98,4 +106,12 @@ declare module '@tanstack/react-router' {
   }
 }
 
-export { dbUserRoute, dbConnRoute, usersRoute, dbSqlRoute, reportsRoute, loginRoute }
+export {
+  dbUserRoute,
+  dbConnRoute,
+  usersRoute,
+  dbSqlRoute,
+  dbSettingsRoute,
+  reportsRoute,
+  loginRoute,
+}

@@ -65,12 +65,6 @@ export function DataTable<TData>({
       className={cn(
         'rounded-md border border-border overflow-auto w-full flex-1 min-h-0 relative',
         'flex flex-col',
-        '[&::-webkit-scrollbar]:w-1.5',
-        '[&::-webkit-scrollbar]:h-1.5',
-        '[&::-webkit-scrollbar-track]:bg-transparent',
-        '[&::-webkit-scrollbar-thumb]:rounded-full',
-        '[&::-webkit-scrollbar-thumb]:bg-border',
-        '[&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground/50',
         className,
       )}
     >

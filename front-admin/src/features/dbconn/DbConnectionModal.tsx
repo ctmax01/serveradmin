@@ -77,6 +77,7 @@ export function DbConnectionModal({ open, onOpenChange, editing, onSave }: Props
         className="sm:max-w-md"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
+        aria-describedby={undefined}
       >
         <DialogHeader>
           <DialogTitle>{editing ? 'Редактировать' : 'Добавить'}</DialogTitle>

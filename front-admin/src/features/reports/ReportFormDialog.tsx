@@ -105,6 +105,7 @@ export function ReportFormDialog({ open, onOpenChange, editing, onSaved }: Props
       <DialogContent
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
         aria-describedby={undefined}
       >
         <DialogHeader>

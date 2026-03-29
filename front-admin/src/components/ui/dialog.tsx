@@ -16,7 +16,10 @@ const DialogPortal = DialogPrimitive.Portal
 
 function DialogClose({
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Close> & { children?: React.ReactNode; className?: string }) {
+}: React.ComponentProps<typeof DialogPrimitive.Close> & {
+  children?: React.ReactNode
+  className?: string
+}) {
   return <DialogPrimitive.Close {...props} />
 }
 
@@ -39,11 +42,15 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, onOpenAutoFocus, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
       ref={ref}
+      onOpenAutoFocus={(e) => {
+        e.preventDefault()
+        onOpenAutoFocus?.(e)
+      }}
       className={cn(
         // positioning
         'fixed left-[50%] top-[50%] z-50',

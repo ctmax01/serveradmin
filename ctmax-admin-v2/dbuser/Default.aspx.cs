@@ -42,8 +42,8 @@ public partial class AdminDBUser : BasePage
     private void HandleGet()
     {
         string userIdParam = Request.QueryString["userId"];
-        string dbKeyParam  = Request.QueryString["dbKey"];
-        string idParam     = Request.QueryString["id"];
+        string dbKeyParam = Request.QueryString["dbKey"];
+        string idParam = Request.QueryString["id"];
         string searchParam = Request.QueryString["search"];
 
         if (!string.IsNullOrEmpty(idParam))
@@ -142,24 +142,21 @@ public partial class AdminDBUser : BasePage
     // POST — создать привязку
     private void HandlePost()
     {
-        var data = WebHelper.ReadJson<CreateBody>(Request);
+        var data = WebHelper.ReadJson<DbUserBody>(Request);
         ValidationHelper.ValidateModel(data);
 
-        // Проверка: пользователь существует?
         int userExists = DB.ExecuteScalar<int>(conString,
             "SELECT COUNT(*) FROM Users WHERE id = @id",
             Params.Create("@id", data.userId));
         if (userExists == 0)
             throw new ClientException("Пользователь с id=" + data.userId + " не найден");
 
-        // Проверка: база существует?
         int connExists = DB.ExecuteScalar<int>(conString,
             "SELECT COUNT(*) FROM DBConn WHERE dbKey = @dbKey",
             Params.Create("@dbKey", data.dbKey));
         if (connExists == 0)
             throw new ClientException("Подключение '" + data.dbKey + "' не найдено");
 
-        // Проверка дубликата
         int exists = DB.ExecuteScalar<int>(conString,
             "SELECT COUNT(*) FROM DBUser WHERE userId = @userId AND dbKey = @dbKey",
             Params.Create("@userId", data.userId, "@dbKey", data.dbKey));
@@ -167,44 +164,43 @@ public partial class AdminDBUser : BasePage
             throw new ClientException("Привязка уже существует");
 
         object newId = DB.ExecuteScalar(conString, @"
-            INSERT INTO DBUser (
-                dbKey, userId, dbname, url,
-                xreport, zakazVirtual, stoplist, passwords, notifications,
-                docs, stockReport, relazReport, cashSummary, cashbook,
-                msettlements, users, category, printers, reservation,
-                dynamicReports, docUserId
-            ) VALUES (
-                @dbKey, @userId, @dbname, @url,
-                @xreport, @zakazVirtual, @stoplist, @passwords, @notifications,
-                @docs, @stockReport, @relazReport, @cashSummary, @cashbook,
-                @msettlements, @users, @category, @printers, @reservation,
-                @dynamicReports, @docUserId
-            ); SELECT SCOPE_IDENTITY();",
+        INSERT INTO DBUser (
+            dbKey, userId, dbname, url,
+            xreport, zakazVirtual, stoplist, passwords, notifications,
+            docs, stockReport, relazReport, cashSummary, cashbook,
+            msettlements, users, category, printers, reservation,
+            dynamicReports, docUserId
+        ) VALUES (
+            @dbKey, @userId, @dbname, @url,
+            @xreport, @zakazVirtual, @stoplist, @passwords, @notifications,
+            @docs, @stockReport, @relazReport, @cashSummary, @cashbook,
+            @msettlements, @users, @category, @printers, @reservation,
+            @dynamicReports, @docUserId
+        ); SELECT SCOPE_IDENTITY();",
             Params.Create(
                 "@dbKey", data.dbKey,
                 "@userId", data.userId,
                 "@dbname", (object)data.dbname ?? DBNull.Value,
                 "@url", (object)data.url ?? DBNull.Value,
-                "@xreport", data.xreport,
-                "@zakazVirtual", data.zakazVirtual,
-                "@stoplist", data.stoplist,
-                "@passwords", data.passwords,
-                "@notifications", data.notifications,
-                "@docs", data.docs,
-                "@stockReport", data.stockReport,
-                "@relazReport", data.relazReport,
-                "@cashSummary", data.cashSummary,
-                "@cashbook", data.cashbook,
-                "@msettlements", data.msettlements,
-                "@users", data.users,
-                "@category", data.category,
-                "@printers", data.printers,
-                "@reservation", data.reservation,
-                "@dynamicReports", data.dynamicReports,
+                "@xreport", data.xreport ?? false,
+                "@zakazVirtual", data.zakazVirtual ?? false,
+                "@stoplist", data.stoplist ?? false,
+                "@passwords", data.passwords ?? false,
+                "@notifications", data.notifications ?? false,
+                "@docs", data.docs ?? false,
+                "@stockReport", data.stockReport ?? false,
+                "@relazReport", data.relazReport ?? false,
+                "@cashSummary", data.cashSummary ?? false,
+                "@cashbook", data.cashbook ?? false,
+                "@msettlements", data.msettlements ?? false,
+                "@users", data.users ?? false,
+                "@category", data.category ?? false,
+                "@printers", data.printers ?? false,
+                "@reservation", data.reservation ?? false,
+                "@dynamicReports", data.dynamicReports ?? false,
                 "@docUserId", (object)data.docUserId ?? DBNull.Value
             ));
 
-        // Сохраняем разрешения на отчёты
         if (data.reportIds != null)
             SaveReportPermissions(data.userId, data.reportIds);
 
@@ -216,57 +212,58 @@ public partial class AdminDBUser : BasePage
     // PUT — обновить привязку
     private void HandlePut()
     {
-        var data = WebHelper.ReadJson<UpdateBody>(Request);
+        var data = WebHelper.ReadJson<DbUserBody>(Request);
         ValidationHelper.ValidateModel(data);
 
+        if (!data.id.HasValue)
+            throw new ClientException("id обязателен");
+
         int affected = DB.ExecuteNonQuery(conString, @"
-            UPDATE DBUser SET
-                dbKey = @dbKey, userId = @userId, dbname = @dbname, url = @url,
-                xreport = @xreport, zakazVirtual = @zakazVirtual,
-                stoplist = @stoplist, passwords = @passwords,
-                notifications = @notifications, docs = @docs,
-                stockReport = @stockReport, relazReport = @relazReport,
-                cashSummary = @cashSummary, cashbook = @cashbook,
-                msettlements = @msettlements, users = @users,
-                category = @category, printers = @printers,
-                reservation = @reservation, dynamicReports = @dynamicReports,
-                docUserId = @docUserId
-            WHERE id = @id",
+        UPDATE DBUser SET
+            dbKey = @dbKey, userId = @userId, dbname = @dbname, url = @url,
+            xreport = @xreport, zakazVirtual = @zakazVirtual,
+            stoplist = @stoplist, passwords = @passwords,
+            notifications = @notifications, docs = @docs,
+            stockReport = @stockReport, relazReport = @relazReport,
+            cashSummary = @cashSummary, cashbook = @cashbook,
+            msettlements = @msettlements, users = @users,
+            category = @category, printers = @printers,
+            reservation = @reservation, dynamicReports = @dynamicReports,
+            docUserId = @docUserId
+        WHERE id = @id",
             Params.Create(
-                "@id", data.id,
+                "@id", data.id.Value,
                 "@dbKey", data.dbKey,
                 "@userId", data.userId,
                 "@dbname", (object)data.dbname ?? DBNull.Value,
                 "@url", (object)data.url ?? DBNull.Value,
-                "@xreport", data.xreport,
-                "@zakazVirtual", data.zakazVirtual,
-                "@stoplist", data.stoplist,
-                "@passwords", data.passwords,
-                "@notifications", data.notifications,
-                "@docs", data.docs,
-                "@stockReport", data.stockReport,
-                "@relazReport", data.relazReport,
-                "@cashSummary", data.cashSummary,
-                "@cashbook", data.cashbook,
-                "@msettlements", data.msettlements,
-                "@users", data.users,
-                "@category", data.category,
-                "@printers", data.printers,
-                "@reservation", data.reservation,
-                "@dynamicReports", data.dynamicReports,
+                "@xreport", data.xreport ?? false,
+                "@zakazVirtual", data.zakazVirtual ?? false,
+                "@stoplist", data.stoplist ?? false,
+                "@passwords", data.passwords ?? false,
+                "@notifications", data.notifications ?? false,
+                "@docs", data.docs ?? false,
+                "@stockReport", data.stockReport ?? false,
+                "@relazReport", data.relazReport ?? false,
+                "@cashSummary", data.cashSummary ?? false,
+                "@cashbook", data.cashbook ?? false,
+                "@msettlements", data.msettlements ?? false,
+                "@users", data.users ?? false,
+                "@category", data.category ?? false,
+                "@printers", data.printers ?? false,
+                "@reservation", data.reservation ?? false,
+                "@dynamicReports", data.dynamicReports ?? false,
                 "@docUserId", (object)data.docUserId ?? DBNull.Value
             ));
 
         if (affected == 0)
             throw new ClientException("Привязка не найдена", code: 404);
 
-        // Сохраняем разрешения на отчёты
         if (data.reportIds != null)
             SaveReportPermissions(data.userId, data.reportIds);
 
         WebHelper.Success(Response, message: "Обновлено");
     }
-
     // DELETE — удалить привязку
     private void HandleDelete()
     {
@@ -301,41 +298,9 @@ public partial class AdminDBUser : BasePage
 
     // ===== MODELS =====
 
-    public class CreateBody
+    public class DbUserBody
     {
-        [Required(ErrorMessage = "userId обязателен")]
-        public int userId { get; set; }
-
-        [Required(ErrorMessage = "dbKey обязателен")]
-        public string dbKey { get; set; }
-
-        public string dbname { get; set; }
-        public string url { get; set; }
-
-        public bool xreport { get; set; }
-        public bool zakazVirtual { get; set; }
-        public bool stoplist { get; set; }
-        public bool passwords { get; set; }
-        public bool notifications { get; set; }
-        public bool docs { get; set; }
-        public bool stockReport { get; set; }
-        public bool relazReport { get; set; }
-        public bool cashSummary { get; set; }
-        public bool cashbook { get; set; }
-        public bool msettlements { get; set; }
-        public bool users { get; set; }
-        public bool category { get; set; }
-        public bool printers { get; set; }
-        public bool reservation { get; set; }
-        public bool dynamicReports { get; set; }
-        public int? docUserId { get; set; }
-        public List<int> reportIds { get; set; }
-    }
-
-    public class UpdateBody
-    {
-        [Required(ErrorMessage = "id обязателен")]
-        public int id { get; set; }
+        public int? id { get; set; }
 
         [Required(ErrorMessage = "userId обязателен")]
         public int userId { get; set; }
@@ -345,25 +310,25 @@ public partial class AdminDBUser : BasePage
 
         public string dbname { get; set; }
         public string url { get; set; }
-
-        public bool xreport { get; set; }
-        public bool zakazVirtual { get; set; }
-        public bool stoplist { get; set; }
-        public bool passwords { get; set; }
-        public bool notifications { get; set; }
-        public bool docs { get; set; }
-        public bool stockReport { get; set; }
-        public bool relazReport { get; set; }
-        public bool cashSummary { get; set; }
-        public bool cashbook { get; set; }
-        public bool msettlements { get; set; }
-        public bool users { get; set; }
-        public bool category { get; set; }
-        public bool printers { get; set; }
-        public bool reservation { get; set; }
-        public bool dynamicReports { get; set; }
         public int? docUserId { get; set; }
         public List<int> reportIds { get; set; }
+
+        public bool? xreport { get; set; }
+        public bool? zakazVirtual { get; set; }
+        public bool? stoplist { get; set; }
+        public bool? passwords { get; set; }
+        public bool? notifications { get; set; }
+        public bool? docs { get; set; }
+        public bool? stockReport { get; set; }
+        public bool? relazReport { get; set; }
+        public bool? cashSummary { get; set; }
+        public bool? cashbook { get; set; }
+        public bool? msettlements { get; set; }
+        public bool? users { get; set; }
+        public bool? category { get; set; }
+        public bool? printers { get; set; }
+        public bool? reservation { get; set; }
+        public bool? dynamicReports { get; set; }
     }
 
     public class DeleteBody

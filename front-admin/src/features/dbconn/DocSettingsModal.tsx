@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
-import { Plus, Trash2, Pencil } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,7 +21,8 @@ import {
 import { useConfirm } from '@/hooks/useConfirm'
 import { docSettingApi } from '@/services/api'
 import type { DocSetting } from '@/types'
-import { DOC_TYPES, SETTING_KEYS, SETTING_GROUPS } from './constants'
+import { DOC_TYPES, SETTING_KEYS, SETTING_GROUPS } from '../dbsettings/constants'
+import { cn } from '@/lib/utils'
 
 interface FormValues {
   settingKey: string
@@ -151,6 +152,7 @@ export function DocSettingsModal({ open, onOpenChange, dbKey }: Props) {
       <DialogContent
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
         aria-describedby={undefined}
       >
         <DialogHeader>
@@ -170,9 +172,16 @@ export function DocSettingsModal({ open, onOpenChange, dbKey }: Props) {
               </p>
             )}
             {items.map((item) => (
-              <div key={item.id} className="flex items-center gap-3 px-3 py-2">
-                <div className="flex-1">
-                  <div className="text-sm font-medium flex items-center gap-2">
+              <div
+                key={item.id}
+                onClick={() => handleEdit(item)}
+                className={cn(
+                  'flex items-center gap-1 px-2 py-1',
+                  editing?.id === item.id ? 'bg-blue-200' : 'bg-transparent',
+                )}
+              >
+                <div className="flex-1 leading-0 gap-1">
+                  <div className="text-sm font-medium flex items-center leading-none gap-1">
                     {getKeyLabel(item.settingKey)}
                     <Badge variant="outline" className="text-xs">
                       {getDocTypeLabel(item.docType)}
@@ -189,9 +198,6 @@ export function DocSettingsModal({ open, onOpenChange, dbKey }: Props) {
                   <span className="font-mono text-sm">{item.value}</span>
                 )}
 
-                <Button size="icon" variant="ghost" onClick={() => handleEdit(item)}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -226,17 +232,17 @@ export function DocSettingsModal({ open, onOpenChange, dbKey }: Props) {
                       onValueChange={(v) => handleKeyChange(v, field.onChange)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Выберите настройку…" />
+                        <SelectValue className="w-full" placeholder="Выберите настройку…" />
                       </SelectTrigger>
                       <SelectContent>
                         {SETTING_GROUPS.map((group) => (
                           <SelectGroup key={group.label}>
                             <SelectLabel>{group.label}</SelectLabel>
                             {group.keys.map((k) => (
-                              <SelectItem key={k.key} value={k.key}>
-                                <div>
-                                  <div className="font-medium">{k.label}</div>
-                                  <div className="text-xs text-muted-foreground">{k.key}</div>
+                              <SelectItem key={k.key} value={k.key} textValue={k.label}>
+                                <div className=" flex flex-col items-start justify-center leading-none">
+                                  <span className="font-medium">{k.label}</span>
+                                  <span className="text-xs text-muted-foreground">{k.key}</span>
                                 </div>
                               </SelectItem>
                             ))}
@@ -259,7 +265,6 @@ export function DocSettingsModal({ open, onOpenChange, dbKey }: Props) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Все типы</SelectItem>
                         {DOC_TYPES.map((d) => (
                           <SelectItem key={d.id} value={String(d.id)}>
                             {d.id} — {d.label}
@@ -282,9 +287,6 @@ export function DocSettingsModal({ open, onOpenChange, dbKey }: Props) {
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
                       )}
                     />
-                    <span className="text-sm text-muted-foreground">
-                      {form.watch('valueBool') ? 'Включено' : 'Выключено'}
-                    </span>
                   </div>
                 ) : (
                   <Input

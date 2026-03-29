@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { MoreHorizontalIcon, Pencil, Plus, Trash2 } from 'lucide-react'
+import {  Plus, Trash2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +12,6 @@ import { reportColumnApi } from '@/services/api'
 import type { Report, ReportColumn } from '@/types'
 import { ColorAlphaPicker } from './ColorAlphaPicker'
 import { Switch } from '@/components/ui/switch'
-import { DropdownMenu, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
 import { cn } from '@/lib/utils'
 
 interface ColFormValues {
@@ -123,6 +122,7 @@ export function ReportColumnsDialog({ open, onOpenChange, report }: Props) {
       <DialogContent
         className="max-w-2xl max-h-[90vh] overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
         aria-describedby={undefined}
       >
         <DialogHeader>
@@ -139,7 +139,7 @@ export function ReportColumnsDialog({ open, onOpenChange, report }: Props) {
             {(error as Error)?.message || 'Ошибка загрузки колонок'}
           </p>
         ) : (
-          <div className="border border-gray-400 rounded-md divide-y divide-gray-400 max-h-66 overflow-y-auto">
+          <div className="border border-gray-400 rounded-md divide-y divide-gray-400 max-h-56 overflow-y-auto">
             {columns.length === 0 && (
               <p className="text-sm text-muted-foreground px-3 py-4 text-center">
                 Колонки не заданы — будут показаны все из SQL
@@ -150,7 +150,7 @@ export function ReportColumnsDialog({ open, onOpenChange, report }: Props) {
                 key={col.id}
                 onClick={() => handleEdit(col)}
                 className={cn(
-                  'flex items-center gap-1 px-3 py-2',
+                  'flex items-center gap-1 px-2 py-1',
                   col.id === editingCol?.id ? 'bg-blue-300' : 'bg-transparent',
                 )}
               >
@@ -183,11 +183,11 @@ export function ReportColumnsDialog({ open, onOpenChange, report }: Props) {
 
         {/* Форма добавления/редактирования */}
         {showForm ? (
-          <div className="border border-gray-400 rounded-md p-3 space-y-3 bg-muted/30">
+          <div className="border border-gray-400 rounded-md p-2 bg-muted/30 space-y-1">
             <h4 className="text-sm font-medium">
               {editingCol ? 'Редактировать колонку' : 'Новая колонка'}
             </h4>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-1">
               <div className="space-y-1">
                 <Label>
                   Key <span className="text-destructive">*</span>

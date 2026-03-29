@@ -15,6 +15,7 @@ import { reportApi } from '@/services/api'
 import type { Report } from '@/types'
 import { ReportFormDialog } from './ReportFormDialog'
 import { ReportColumnsDialog } from './ReportColumnsDialog'
+import Title from '@/components/ui/title'
 
 const col = createColumnHelper<Report>()
 
@@ -101,56 +102,57 @@ const ReportsPage = () => {
   })
 
   return (
-    <div className="pageConn">
-      {ConfirmDialog}
+    <>
+      <Title title="Базы данных" />
+      <div className="pageConn">
+        {ConfirmDialog}
 
-      <h2 className="text-xl font-semibold">Отчёты</h2>
+        {isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{(error as Error)?.message || 'Ошибка загрузки'}</AlertDescription>
+          </Alert>
+        )}
 
-      {isError && (
-        <Alert variant="destructive">
-          <AlertDescription>{(error as Error)?.message || 'Ошибка загрузки'}</AlertDescription>
-        </Alert>
-      )}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Поиск по названию, описанию…"
+            value={searchInput}
+            className="max-w-90 min-w-30"
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
+          />
+          <Button variant="outline" size="icon" onClick={() => setSearch(searchInput)}>
+            {isFetching ? <SpinnerCustom /> : <Search />}
+          </Button>
+          <Button size="icon" onClick={handleAdd}>
+            <Plus />
+          </Button>
+        </div>
 
-      <div className="flex gap-2">
-        <Input
-          placeholder="Поиск по названию, описанию…"
-          className="w-80"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && setSearch(searchInput)}
+        <DataTable
+          table={table}
+          isLoading={isLoading}
+          rowActions={[
+            { label: 'Изменить', onClick: handleEdit },
+            { label: 'Колонки', onClick: handleColumns },
+            { label: 'Удалить', onClick: (r) => handleDelete(r.id), className: 'text-red-600' },
+          ]}
         />
-        <Button variant="outline" size="icon" onClick={() => setSearch(searchInput)}>
-          {isFetching ? <SpinnerCustom /> : <Search />}
-        </Button>
-        <Button size="icon" onClick={handleAdd}>
-          <Plus />
-        </Button>
+
+        <ReportFormDialog
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          editing={editing}
+          onSaved={invalidate}
+        />
+
+        <ReportColumnsDialog
+          open={columnsDialogOpen}
+          onOpenChange={setColumnsDialogOpen}
+          report={selectedReport}
+        />
       </div>
-
-      <DataTable
-        table={table}
-        isLoading={isLoading}
-        rowActions={[
-          { label: 'Изменить', onClick: handleEdit },
-          { label: 'Колонки', onClick: handleColumns },
-          { label: 'Удалить', onClick: (r) => handleDelete(r.id), className: 'text-red-600' },
-        ]}
-      />
-
-      <ReportFormDialog
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        editing={editing}
-        onSaved={invalidate}
-      />
-
-      <ReportColumnsDialog
-        open={columnsDialogOpen}
-        onOpenChange={setColumnsDialogOpen}
-        report={selectedReport}
-      />
-    </div>
+    </>
   )
 }
 

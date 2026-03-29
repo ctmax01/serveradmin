@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { CheckCircle2, Search, UserPlus, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -47,6 +47,7 @@ export function StepUserSelect({ form, selectedUser, onSelectUser }: Props) {
         password: newPassword,
       })
       toast.success('Пользователь создан')
+      setQuery('')
       qc.invalidateQueries({ queryKey: ['users-search'] })
       form.setValue('userId', created.id)
       onSelectUser({ id: created.id, name: newName })

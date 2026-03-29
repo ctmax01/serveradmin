@@ -21,7 +21,7 @@ import { dbConnApi } from '../../services/api'
 import { SpinnerCustom } from '@/components/ui/spinner'
 import { Plus, Search } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
-import { DocSettingsModal } from './DocSettingsModal'
+import Title from '@/components/ui/title'
 
 const col = createColumnHelper<DbConn>()
 const selectArray = (d: unknown) => (Array.isArray(d) ? d : [])
@@ -47,8 +47,6 @@ const DbConnPage = () => {
   const [searchInput, setSearchInput] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<DbConn | null>(null)
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [settingsDbKey, setSettingsDbKey] = useState<string | null>(null)
 
   const {
     data = [],
@@ -111,10 +109,6 @@ const DbConnPage = () => {
       throw err
     }
   }
-  const handleSettings = (db: DbConn) => {
-    setSettingsDbKey(db.dbKey)
-    setSettingsOpen(true)
-  }
 
   const table = useReactTable({
     data: (data as DbConn[]) ?? [],
@@ -125,62 +119,72 @@ const DbConnPage = () => {
   })
 
   return (
-    <div className="pageConn">
+    <>
       {ConfirmDialog}
 
-      <h2 className="text-xl font-semibold">Базы данных</h2>
+      <Title title="Базы данных" />
 
-      {isError && (
-        <Alert variant="destructive">
-          <AlertDescription>{(error as Error)?.message || 'Ошибка загрузки'}</AlertDescription>
-        </Alert>
-      )}
+      <div className="pageConn">
+        {isError && (
+          <Alert variant="destructive">
+            <AlertDescription>{(error as Error)?.message || 'Ошибка загрузки'}</AlertDescription>
+          </Alert>
+        )}
 
-      <div className="flex gap-2">
-        <Input
-          placeholder="Поиск по ключу, названию, строке подключения…"
-          className="w-90 min-w-30"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Поиск по ключу, названию, строке подключения…"
+            className="max-w-90 min-w-30"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          />
+
+          <Button size="icon" variant="outline" onClick={handleSearch} disabled={isFetching}>
+            {isFetching ? <SpinnerCustom /> : <Search />}
+          </Button>
+
+          <Button onClick={handleAdd} size="icon">
+            <Plus />
+          </Button>
+        </div>
+
+        <DataTable
+          table={table}
+          isLoading={isLoading}
+          minWidth={560}
+          rowActions={[
+            {
+              label: 'Пользователи',
+              onClick: (db) =>
+                navigate({ to: '/dbconn/$dbKey/users', params: { dbKey: db.dbKey } }),
+            },
+            {
+              label: 'Настройки документов',
+              onClick: (db) =>
+                navigate({ to: '/dbconn/$dbKey/settings', params: { dbKey: db.dbKey } }),
+            },
+            {
+              label: 'SQL запросы',
+              onClick: (db) => navigate({ to: '/dbconn/$dbKey/sql', params: { dbKey: db.dbKey } }),
+            },
+            { label: 'Изменить', onClick: handleEdit },
+            {
+              label: 'Удалить',
+              onClick: (db) => handleDelete(db.dbKey),
+              className: 'text-red-600',
+            },
+          ]}
         />
 
-        <Button size="icon" variant="outline" onClick={handleSearch} disabled={isFetching}>
-          {isFetching ? <SpinnerCustom /> : <Search />}
-        </Button>
-
-        <Button onClick={handleAdd} size="icon">
-          <Plus />
-        </Button>
+        <DbConnectionModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          editing={editing}
+          onSave={handleSave}
+        />
       </div>
-
-      <DataTable
-        table={table}
-        isLoading={isLoading}
-        minWidth={560}
-        rowActions={[
-          {
-            label: 'Пользователи',
-            onClick: (db) => navigate({ to: '/dbconn/$dbKey/users', params: { dbKey: db.dbKey } }),
-          },
-          { label: 'Настройки документов', onClick: handleSettings },
-          { label: 'Изменить', onClick: handleEdit },
-          {
-            label: 'Удалить',
-            onClick: (db) => handleDelete(db.dbKey),
-            className: 'text-red-600',
-          },
-        ]}
-      />
-
-      <DbConnectionModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        editing={editing}
-        onSave={handleSave}
-      />
-      <DocSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} dbKey={settingsDbKey} />
-    </div>
+    </>
   )
 }
 

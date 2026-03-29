@@ -7,12 +7,10 @@ using Pos.Pages;
 
 public partial class AdminDBConn : BasePage
 {
-    private string conString;
+    private string conString = DB.GetDefaultConnString();
 
     protected override void Execute()
     {
-        conString = DB.GetDefaultConnString();
-
         switch (Request.HttpMethod)
         {
             case "GET":
@@ -40,7 +38,7 @@ public partial class AdminDBConn : BasePage
     // GET /core/admin/dbconn/?search=foo      — поиск LIKE
     private void HandleGet()
     {
-        string dbKeyParam  = Request.QueryString["dbKey"];
+        string dbKeyParam = Request.QueryString["dbKey"];
         string searchParam = Request.QueryString["search"];
 
         if (!string.IsNullOrEmpty(dbKeyParam))
@@ -63,9 +61,17 @@ public partial class AdminDBConn : BasePage
                 "SELECT dbKey, conString, name FROM DBConn WHERE dbKey LIKE @search OR name LIKE @search OR conString LIKE @search ORDER BY dbKey",
                 Params.Create("@search", "%" + searchParam + "%"))
             : DB.ExecuteQuery(conString,
-                "SELECT dbKey, conString, name FROM DBConn ORDER BY dbKey");
+               @"SELECT TOP 100 *
+                FROM DBConn
+                ORDER BY 
+                CASE WHEN createdAt IS NULL THEN 1 ELSE 0 END,
+                createdAt DESC"
+            );
+
 
         var list = DB.ReaderToDictList(dr);
+
+
         WebHelper.Success(Response, data: list);
     }
 
@@ -85,7 +91,7 @@ public partial class AdminDBConn : BasePage
 
         // Тест подключения
         if (!DB.TestConnection(data.conString))
-            throw new ClientException("Не удалось подключиться к базе. Проверьте строку подключения.");
+            throw new ClientException("Не удалось подключиться к новой базе. Проверьте строку подключения.");
 
         DB.ExecuteNonQuery(conString, @"
             INSERT INTO DBConn (dbKey, conString, name)

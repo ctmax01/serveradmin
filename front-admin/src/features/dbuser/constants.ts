@@ -1,21 +1,44 @@
 export const PERMISSION_FIELDS = [
-  { name: 'xreport', label: 'X Report' },
-  { name: 'zakazVirtual', label: 'Zakaz Virtual' },
-  { name: 'stoplist', label: 'Stoplist' },
-  { name: 'passwords', label: 'Passwords' },
-  { name: 'notifications', label: 'Notifications' },
-  { name: 'docs', label: 'Docs' },
-  { name: 'stockReport', label: 'Stock Report' },
-  { name: 'relazReport', label: 'Relaz Report' },
-  { name: 'cashSummary', label: 'Cash Summary' },
-  { name: 'cashbook', label: 'Cashbook' },
-  { name: 'msettlements', label: 'M.Settlements' },
-  { name: 'users', label: 'Users' },
-  { name: 'category', label: 'Category' },
-  { name: 'printers', label: 'Printers' },
-  { name: 'reservation', label: 'Reservation' },
-  { name: 'dynamicReports', label: 'Dyn. Reports' },
+  { name: 'xreport', label: 'отчет' },
+  { name: 'zakazVirtual', label: 'открытые чеки' },
+  { name: 'stoplist', label: 'стоп-лист' },
+  { name: 'passwords', label: 'пароли' },
+  { name: 'notifications', label: 'уведомления' },
+  { name: 'docs', label: 'документы' },
+  { name: 'stockReport', label: 'отчет по складу' },
+  { name: 'relazReport', label: 'отчет по реализации' },
+  { name: 'cashSummary', label: 'свод по кассе' },
+  { name: 'cashbook', label: 'кассовая книга' },
+  { name: 'msettlements', label: 'взаиморасчеты' },
+  { name: 'users', label: 'пользователи' },
+  { name: 'category', label: 'продукты' },
+  { name: 'printers', label: 'принтеры' },
+  { name: 'reservation', label: 'бронь' },
+  { name: 'dynamicReports', label: 'динамические отчеты' },
 ]
+
+export const PERMISSION_GROUPS = [
+  {
+    label: 'Основное',
+    fields: ['xreport', 'zakazVirtual', 'stoplist', 'passwords', 'notifications', 'reservation'],
+  },
+  {
+    label: 'Склад и касса',
+    fields: [
+      'docs',
+      'stockReport',
+      'relazReport',
+      'cashSummary',
+      'cashbook',
+      'msettlements',
+      'dynamicReports',
+    ],
+  },
+  {
+    label: 'Справочники',
+    fields: ['users', 'category', 'printers'],
+  },
+] satisfies { label: string; fields: (keyof ReturnType<typeof buildDefaults>)[] }[]
 
 export const buildDefaults = (dbKey: string) => ({
   userId: null,

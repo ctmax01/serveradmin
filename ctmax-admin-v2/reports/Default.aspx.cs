@@ -14,10 +14,10 @@ public partial class AdminReports : BasePage
 
         switch (Request.HttpMethod)
         {
-            case "GET":     HandleGet();    break;
-            case "POST":    HandlePost();   break;
-            case "PUT":     HandlePut();    break;
-            case "DELETE":  HandleDelete(); break;
+            case "GET": HandleGet(); break;
+            case "POST": HandlePost(); break;
+            case "PUT": HandlePut(); break;
+            case "DELETE": HandleDelete(); break;
             case "OPTIONS": WebHelper.OptionsSuccess(Response); break;
             default: throw new ClientException("Метод не поддерживается", code: 405);
         }
@@ -25,7 +25,7 @@ public partial class AdminReports : BasePage
 
     private void HandleGet()
     {
-        string idParam     = Request.QueryString["id"];
+        string idParam = Request.QueryString["id"];
         string searchParam = Request.QueryString["search"];
 
         if (!string.IsNullOrEmpty(idParam))
@@ -74,13 +74,13 @@ public partial class AdminReports : BasePage
             VALUES (@name, @description, @sqlQuery, @queryType, @includeUnknownColumns, @sortOrder, @isActive);
             SELECT SCOPE_IDENTITY();",
             Params.Create(
-                "@name",                  data.name,
-                "@description",           (object)data.description ?? DBNull.Value,
-                "@sqlQuery",              data.sqlQuery,
-                "@queryType",             data.queryType,
+                "@name", data.name,
+                "@description", (object)data.description ?? DBNull.Value,
+                "@sqlQuery", data.sqlQuery,
+                "@queryType", data.queryType,
                 "@includeUnknownColumns", data.includeUnknownColumns,
-                "@sortOrder",             data.sortOrder,
-                "@isActive",              data.isActive
+                "@sortOrder", data.sortOrder,
+                "@isActive", data.isActive
             ));
 
         WebHelper.Success(Response,
@@ -107,14 +107,14 @@ public partial class AdminReports : BasePage
                 isActive              = @isActive
             WHERE id = @id",
             Params.Create(
-                "@id",                    data.id.Value,
-                "@name",                  data.name,
-                "@description",           (object)data.description ?? DBNull.Value,
-                "@sqlQuery",              data.sqlQuery,
-                "@queryType",             data.queryType,
+                "@id", data.id.Value,
+                "@name", data.name,
+                "@description", (object)data.description ?? DBNull.Value,
+                "@sqlQuery", data.sqlQuery,
+                "@queryType", data.queryType,
                 "@includeUnknownColumns", data.includeUnknownColumns,
-                "@sortOrder",             data.sortOrder,
-                "@isActive",              data.isActive
+                "@sortOrder", data.sortOrder,
+                "@isActive", data.isActive
             ));
 
         if (affected == 0)
@@ -140,20 +140,20 @@ public partial class AdminReports : BasePage
 
     public class ReportBody
     {
-        public int?   id                    { get; set; }
+        public int? id { get; set; }
 
         [Required(ErrorMessage = "name обязателен")]
-        public string name                  { get; set; }
-        public string description           { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
 
         [Required(ErrorMessage = "sqlQuery обязателен")]
-        public string sqlQuery              { get; set; }
+        public string sqlQuery { get; set; }
 
         [Required(ErrorMessage = "queryType обязателен")]
-        public string queryType             { get; set; }
-        public bool   includeUnknownColumns { get; set; }
-        public int    sortOrder             { get; set; }
-        public bool   isActive              { get; set; }
+        public string queryType { get; set; }
+        public bool includeUnknownColumns { get; set; }
+        public int sortOrder { get; set; }
+        public bool isActive { get; set; }
     }
 
     public class DeleteBody

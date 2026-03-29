@@ -7,8 +7,10 @@ import { useQuery } from '@tanstack/react-query'
 import { reportApi } from '@/services/api'
 import type { User } from '@/types'
 import type { FormValues } from './type'
-import { PERMISSION_FIELDS } from './constants'
+import { PERMISSION_FIELDS, PERMISSION_GROUPS } from './constants'
 import { Controller, type UseFormReturn } from 'react-hook-form'
+import { cn } from '@/lib/utils'
+import { Check } from 'lucide-react'
 
 interface Props {
   form: UseFormReturn<FormValues>
@@ -70,20 +72,67 @@ export function StepDbPermissions({ form, selectedUser, onChangeUser }: Props) {
           </span>
           <Separator className="flex-1" />
         </div>
-        <div className="grid grid-cols-3 gap-x-3 gap-y-1.5">
-          {PERMISSION_FIELDS.map((f) => (
-            <Controller
-              key={f.name}
-              name={f.name as keyof FormValues}
-              control={form.control}
-              render={({ field }) => (
-                <label className="flex items-center gap-1 cursor-pointer rounded-md px-1 py-1 hover:bg-muted/50 transition-colors">
-                  <Checkbox checked={!!field.value} onCheckedChange={field.onChange} />
-                  <span className="text-xs">{f.label}</span>
-                </label>
-              )}
-            />
-          ))}
+        <div className="flex flex-col gap-1">
+          {PERMISSION_GROUPS.map((group) => {
+            const allChecked = group.fields.every((name) => !!form.watch(name))
+
+            const toggleGroup = () => {
+              group.fields.forEach((name) => form.setValue(name, !allChecked))
+            }
+
+            return (
+              <div key={group.label}>
+                <div className="flex items-center justify-between mb-1.5 ml-0.5">
+                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    {group.label}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={toggleGroup}
+                    className={cn(
+                      'flex items-center gap-1 px-1 py-1 rounded-md border cursor-pointer transition-colors text-[10px] select-none',
+                      allChecked
+                        ? 'bg-blue-200 border-primary/40 text-primary font-medium'
+                        : 'border-border text-muted-foreground hover:bg-muted/50',
+                    )}
+                  >
+                    {allChecked && <Check size={12} />}
+                    {allChecked ? 'Снять все' : 'Выбрать все'}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {group.fields.map((name) => {
+                    const f = PERMISSION_FIELDS.find((p) => p.name === name)!
+                    return (
+                      <Controller
+                        key={name}
+                        name={name}
+                        control={form.control}
+                        render={({ field }) => (
+                          <label
+                            className={cn(
+                              'h-8 flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border cursor-pointer transition-colors text-xs select-none leading-none',
+                              field.value
+                                ? 'bg-blue-200 border-primary/40 text-primary font-medium'
+                                : 'border-border text-muted-foreground hover:bg-muted/50',
+                            )}
+                          >
+                            <Checkbox
+                              checked={!!field.value}
+                              onCheckedChange={field.onChange}
+                              className="hidden"
+                            />
+                            {field.value && <Check size={12} />}
+                            <span>{f.label}</span>
+                          </label>
+                        )}
+                      />
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
