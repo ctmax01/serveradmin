@@ -1,4 +1,4 @@
-function parseDate(val: string): Date | null {
+export function parseDate(val: string): Date | null {
   if (!val) return null
   // формат "24.08.2025 17:40:29"
   const [datePart, timePart] = val.split(' ')

@@ -2,7 +2,7 @@ import axios from 'axios'
 import type { User, DbConn, DbSql, DbUser, Report, ReportColumn, DocSetting } from '../types'
 
 const apiClient = axios.create({
-  baseURL: 'http://192.168.0.10:81/z-admin/core/admin',
+  baseURL: (window as any).__CONFIG__?.API_BASE_URL ?? 'http://192.168.0.10:81/z-admin/core/admin',
   timeout: 15000,
 })
 

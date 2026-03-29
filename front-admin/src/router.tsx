@@ -96,6 +96,7 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
+  basepath: (window as any).__CONFIG__?.BASE_PATH ?? '/web-admin',
   defaultNotFoundComponent: () => <div>404</div>,
 })
 
